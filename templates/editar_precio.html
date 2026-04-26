@@ -1,0 +1,164 @@
+<h3>Editar precio</h3>
+
+<form method="POST">
+  <p>{{ producto[1] }}</p>
+
+  <input type="number" name="precio" step="0.01" required>
+
+  <button type="submit">Guardar</button>
+</form>
+HISTORIAL_STOCK.HTML
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<div class="container mt-5">
+
+<h2>📊 Historial de movimientos</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <a href="/" class="btn btn-secondary">⬅ Volver</a>
+
+    <form action="/reiniciar_sistema" method="POST"
+    onsubmit="return confirm('¿Seguro que querés borrar todo el historial?');">
+        <button type="submit" class="btn btn-outline-danger">
+            🧹 Limpiar historial
+        </button>
+    </form>
+
+</div>
+
+<!-- FILTROS -->
+<div class="mb-3">
+    <button class="btn btn-dark" onclick="filtrar('todos')">Todas</button>
+    <button class="btn btn-success" onclick="filtrar('venta')">Ventas</button>
+    <button class="btn btn-danger" onclick="filtrar('eliminacion')">Eliminados</button>
+    <button class="btn btn-warning" onclick="filtrar('gasto')">Gastos</button>
+</div>
+
+<table class="table table-bordered table-hover">
+<tr>
+  <th>Producto</th>
+  <th>Tipo</th>
+  <th>Cantidad</th>
+  <th>Fecha</th>
+  <th>Acción</th>
+</tr>
+
+{% for h in datos %}
+<tr class="fila" data-tipo="{{ h[1] }}">
+  
+  <!-- PRODUCTO -->
+  <td>
+    {{ h[0] if h[0] else '—' }}
+  </td>
+
+  <!-- TIPO -->
+  <td>
+
+{% if h[1] == 'venta' %}
+    <span class="text-success fw-bold">Venta</span>
+
+{% elif h[1] == 'eliminacion' %}
+    <span class="text-danger fw-bold">Venta eliminada</span>
+
+{% elif h[1] == 'restauracion' %}
+    <span class="text-info fw-bold">Venta restaurada</span>
+
+{% elif h[1] == 'gasto' %}
+    <span class="text-warning fw-bold">Gasto</span>
+
+{% elif h[1] == 'gasto_eliminado' %}
+    <span class="text-danger fw-bold">Gasto eliminado</span>
+
+{% elif h[1] == 'gasto_restaurado' %}
+    <span class="text-info fw-bold">Gasto restaurado</span>
+
+{% elif h[1] == 'ingreso' %}
+    <span class="text-primary fw-bold">Ingreso stock</span>
+
+{% else %}
+    {{ h[1] }}
+{% endif %}
+
+</td>
+
+  <!-- CANTIDAD -->
+  <td>{{ h[2] }}</td>
+
+  <!-- FECHA -->
+  <td>{{ h[3] }}</td>
+
+  <!-- ACCIONES -->
+  <td>
+
+{% if h[4] %}
+
+    <!-- 🔁 RESTAURAR -->
+    {% if h[1] == 'eliminacion' %}
+        <form action="/restaurar_venta/{{ h[4] }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-warning btn-sm me-1" title="Restaurar">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </form>
+
+    {% elif h[1] == 'gasto_eliminado' %}
+        <form action="/restaurar_gasto/{{ h[4] }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-warning btn-sm me-1" title="Restaurar">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        </form>
+    {% endif %}
+
+    <!-- 🗑️ ELIMINAR DEFINITIVO -->
+    {% if h[1] in ['venta', 'eliminacion'] %}
+        <form action="/eliminar_venta_definitivo/{{ h[4] }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm"
+            onclick="return confirm('¿Eliminar definitivamente?')"
+            title="Eliminar">
+                <i class="bi bi-trash"></i>
+            </button>
+        </form>
+
+    {% elif 'gasto' in h[1] %}
+        <form action="/eliminar_gasto_definitivo/{{ h[4] }}" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm"
+            onclick="return confirm('¿Eliminar definitivamente?')"
+            title="Eliminar">
+                <i class="bi bi-trash"></i>
+            </button>
+        </form>
+    {% endif %}
+
+{% endif %}
+
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+<script>
+function filtrar(tipo) {
+    const filas = document.querySelectorAll(".fila");
+
+    filas.forEach(fila => {
+        const tipoFila = fila.getAttribute("data-tipo");
+
+        if (tipo === "todos") {
+            fila.style.display = "";
+        } 
+        else if (tipo === "venta") {
+            fila.style.display = tipoFila === "venta" ? "" : "none";
+        } 
+        else if (tipo === "eliminacion") {
+            fila.style.display = tipoFila.includes("eliminacion") ? "" : "none";
+        } 
+        else if (tipo === "gasto") {
+            fila.style.display = tipoFila.includes("gasto") ? "" : "none";
+        }
+    });
+}
+</script>

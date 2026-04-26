@@ -1,0 +1,488 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<div class="container mt-5">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- IZQUIERDA -->
+    <div class="d-flex align-items-center gap-2">
+
+        <a href="/historial" class="btn btn-dark btn-sm">
+            📊 Historial
+        </a>
+
+        <form action="/excel" method="GET" class="d-flex align-items-center gap-2">
+        
+            <button class="btn btn-success btn-sm">
+                📥 Excel
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- DERECHA -->
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-dark px-3 py-2">
+            👤 {{ session["usuario"] }}
+        </span>
+
+        <a href="/logout" class="btn btn-danger btn-sm">
+            Cerrar sesión
+        </a>
+    </div>
+
+</div>
+
+
+<!-- RESUMEN -->
+
+<div class="container mt-5 text-center">
+
+
+</div>
+
+<div class="row mb-4">
+  <div class="col">
+    <div class="card p-3 bg-success text-white">
+      <h5>Ventas</h5>
+      <p>${{ ventas_total }}</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card p-3 bg-danger text-white">
+      <h5>Gastos</h5>
+      <p>${{ gastos_total }}</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card p-3 bg-primary text-white">
+      <h5>Ganancia</h5>
+      <p>${{ ganancia }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULARIO -->
+<h4>➕ Nueva venta</h4>
+
+<form action="/agregar_venta" method="POST">
+
+<div class="mb-2">
+<label>Producto:</label>
+<select name="producto_id" class="form-control">
+  {% for p in productos %}
+    <option value="{{ p[0] }}">{{ p[1] }}</option>
+  {% endfor %}
+</select>
+</div>
+
+<div class="mb-2">
+<label>Promoción:</label>
+<select name="promocion_id" class="form-control">
+  <option value="">Sin promoción</option>
+  {% for promo in promociones %}
+    <option value="{{ promo[0] }}">{{ promo[1] }}</option>
+  {% endfor %}
+</select>
+</div>
+
+<div class="mb-2">
+    <label>Método de pago</label>
+    <select name="metodo_pago_id" class="form-control" required>
+        {% for m in metodos_pago %}
+            <option value="{{ m[0] }}">{{ m[1] }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="mb-2">
+<label>Cantidad:</label>
+<input type="number" name="cantidad" class="form-control" required>
+</div>
+
+<br>
+<button type="submit" class="btn btn-success">Guardar venta</button>
+
+</form>
+
+<hr>
+
+<!-- TABLA -->
+<h3>📋 Ventas realizadas</h3>
+
+<button id="btn-ventas" onclick="mostrarVentas()" class="btn btn-primary btn-sm mb-2">
+  Ver todas
+</button>
+
+<!-- 🔍 FILTRO (OCULTO) -->
+<div id="filtro-container" style="display:none;">
+
+  <input 
+    type="date" 
+    id="filtroFecha"
+    class="form-control mb-2"
+    onchange="filtrarVentas()">
+<button type="button" id="btn-limpiar-ventas" class="btn btn-secondary">
+  Limpiar
+</button>
+</div>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+  <th>Fecha</th>
+  <th>Producto</th>
+  <th>Cantidad</th>
+  <th>Total</th>
+  <th>Método de pago</th>
+  <th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="ventas-cortas">
+{% for v in ventas_ultimas %}
+<tr>
+  <td>{{ v[1].strftime("%d/%m/%Y %H:%M:%S") }}</td>
+  <td>{{ v[2] }}</td>
+  <td>{{ v[3] }}</td>
+  <td>${{ v[4] }}</td>
+  <td>{{ v[5] }}</td>
+ <td>
+
+<form method="POST" action="/eliminar_venta/{{ v[0] }}">
+    <button type="submit" 
+            class="btn btn-danger btn-sm"
+            onclick="return confirm('¿Eliminar?')">
+        🗑
+    </button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+
+<tbody id="ventas-todas" style="display:none;">
+{% for v in ventas_todas %}
+<tr>
+  <td>{{ v[1].strftime("%d/%m/%Y %H:%M:%S") }}</td>
+  <td>{{ v[2] }}</td>
+  <td>{{ v[3] }}</td>
+  <td>${{ v[4] }}</td>
+  <td>{{ v[5] }}</td>
+  <td>
+<form method="POST" action="/eliminar_venta/{{ v[0] }}">
+  <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+<h4>💸 Gastos</h4>
+
+<button id="btn-gastos" class="btn btn-secondary btn-sm mb-2" onclick="mostrarGastos()">
+  Ver todos
+</button>
+<div id="filtro-gastos" style="display:none;">
+
+  <input 
+    type="date" 
+    id="filtroFechaGastos"
+    class="form-control mb-2"
+    onchange="filtrarGastos()">
+<button type="button" id="btn-limpiar-gastos" class="btn btn-secondary">
+  Limpiar
+</button>
+</div>
+<table class="table table-bordered">
+
+<thead>
+<tr>
+  <th>Fecha</th>
+  <th>Descripción</th>
+  <th>Monto</th>
+  <th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="gastos-cortos">
+{% for g in gastos_ultimos %}
+<tr>
+  <td>{{ g[3].strftime("%d/%m/%Y %H:%M:%S") }}</td>
+<td>{{ g[1] }}</td> <!-- descripcion -->
+<td>${{ g[2] }}</td> <!-- monto -->
+<td>
+<form method="POST" action="/eliminar_gasto/{{ g[0] }}">
+  <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+
+<tbody id="gastos-todos" style="display:none;">
+{% for g in gastos_todos %}
+<tr>
+  <td>{{ g[3].strftime("%d/%m/%Y %H:%M:%S") }}</td>
+<td>{{ g[1] }}</td>
+<td>${{ g[2] }}</td>
+<td>
+  <form action="/eliminar_gasto/{{ g[0] }}" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-danger btn-sm"
+        onclick="return confirm('¿Eliminar gasto?')">
+        🗑
+    </button>
+</form>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+<h4>➕ Agregar producto nuevo</h4>
+
+<form action="/agregar_producto" method="POST" class="row g-2 mb-4">
+
+  <div class="col">
+    <input type="text" name="nombre" placeholder="Nombre del producto" class="form-control" required>
+  </div>
+
+  <div class="col">
+    <input type="number" name="precio" placeholder="Precio" class="form-control" required>
+  </div>
+
+  <div class="col">
+    <input type="number" name="stock" placeholder="Stock inicial" class="form-control" required>
+  </div>
+
+  <div class="col">
+    <button class="btn btn-primary">Agregar</button>
+  </div>
+
+</form>
+<h4>📦 Productos / Stock</h4>
+
+<table class="table table-bordered align-middle">
+
+<tr>
+  <th>Producto</th>
+  <th>Stock inicial</th>
+  <th>Stock actual</th>
+  <th>Precio</th>
+  <th>Acciones</th>
+</tr>
+
+{% for p in productos %}
+<tr>
+
+<form action="/editar_producto" method="POST">
+
+  <td>{{ p[1] }}</td>
+
+  <td>
+    <input type="number" name="stock_inicial" value="{{ p[2] }}"
+           class="form-control form-control-sm text-center" style="max-width:90px;">
+  </td>
+
+  <td class="text-center">
+    {{ p[3] }}
+  </td>
+
+  <td>
+    <input type="number" name="precio" value="{{ p[4] }}"
+           class="form-control form-control-sm text-center" style="max-width:100px;">
+  </td>
+
+  <input type="hidden" name="producto_id" value="{{ p[0] }}">
+
+  <td class="d-flex gap-2">
+
+    <!-- GUARDAR -->
+    <button type="submit" class="btn btn-success btn-sm">
+      💾
+    </button>
+
+</form>
+
+    <!-- ELIMINAR -->
+    <form method="POST" action="/eliminar_producto/{{ p[0] }}">
+      <button type="submit" class="btn btn-danger btn-sm"
+              onclick="return confirm('¿Eliminar producto?')">
+        🗑
+      </button>
+    </form>
+
+  </td>
+
+</tr>
+{% endfor %}
+
+</table>
+
+
+<h4>📦 Ingreso de mercadería</h4>
+
+<form action="/ingresar_stock" method="POST">
+
+<div class="mb-2">
+<label>Producto:</label>
+<select name="producto_id" class="form-control">
+  {% for p in productos %}
+    <option value="{{ p[0] }}">{{ p[1] }}</option>
+  {% endfor %}
+</select>
+</div>
+
+<div class="mb-2">
+<label>Cantidad:</label>
+<input type="number" name="cantidad" class="form-control" required>
+</div>
+
+<br>
+<button type="submit" class="btn btn-primary">
+  Agregar stock
+</button>
+
+</form>
+
+<h4>💸 Registrar gasto</h4>
+
+<form action="/agregar_gasto" method="POST">
+
+<div class="mb-2">
+  <label>Descripción:</label>
+  <input type="text" name="descripcion" class="form-control" required>
+</div>
+
+<div class="mb-2">
+  <label>Monto:</label>
+  <input type="number" step="0.01" name="monto" class="form-control" required>
+</div>
+
+<br>
+<button type="submit" class="btn btn-success">
+  Agregar gasto
+</button>
+
+</form>
+
+<script>
+// 🔥 ESPERAR QUE CARGUE TODO EL HTML
+document.addEventListener("DOMContentLoaded", function () {
+
+    let ventasMostradas = false;
+    let gastosMostrados = false;
+
+    // 🔵 VENTAS
+    window.mostrarVentas = function () {
+        const cortas = document.getElementById("ventas-cortas");
+        const todas = document.getElementById("ventas-todas");
+        const btn = document.getElementById("btn-ventas");
+        const filtro = document.getElementById("filtro-container");
+
+        ventasMostradas = !ventasMostradas;
+
+        cortas.style.display = ventasMostradas ? "none" : "table-row-group";
+        todas.style.display = ventasMostradas ? "table-row-group" : "none";
+        filtro.style.display = ventasMostradas ? "block" : "none";
+
+        btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
+    };
+
+    // 🔴 GASTOS
+    window.mostrarGastos = function () {
+        const cortos = document.getElementById("gastos-cortos");
+        const todos = document.getElementById("gastos-todos");
+        const btn = document.getElementById("btn-gastos");
+        const filtro = document.getElementById("filtro-gastos");
+
+        gastosMostrados = !gastosMostrados;
+
+        cortos.style.display = gastosMostrados ? "none" : "table-row-group";
+        todos.style.display = gastosMostrados ? "table-row-group" : "none";
+        filtro.style.display = gastosMostrados ? "block" : "none";
+
+        btn.innerText = gastosMostrados ? "Ver menos" : "Ver todos";
+    };
+
+    // 🔍 FILTRAR VENTAS
+    window.filtrarVentas = function () {
+        const fechaFiltro = document.getElementById("filtroFecha").value;
+
+        if (!fechaFiltro) return;
+
+        const [anio, mes, dia] = fechaFiltro.split("-");
+        const fechaFormateada = `${dia}/${mes}/${anio}`;
+
+        document.querySelectorAll("#ventas-todas tr").forEach(fila => {
+            const fechaTexto = fila.cells[0].innerText;
+            fila.style.display = fechaTexto.includes(fechaFormateada) ? "" : "none";
+        });
+    };
+
+    // 🔍 FILTRAR GASTOS
+    window.filtrarGastos = function () {
+        const fechaFiltro = document.getElementById("filtroFechaGastos").value;
+
+        if (!fechaFiltro) return;
+
+        const [anio, mes, dia] = fechaFiltro.split("-");
+        const fechaFormateada = `${dia}/${mes}/${anio}`;
+
+        document.querySelectorAll("#gastos-todos tr").forEach(fila => {
+            const fechaTexto = fila.cells[0].innerText;
+            fila.style.display = fechaTexto.includes(fechaFormateada) ? "" : "none";
+        });
+    };
+
+    // 🧹 LIMPIAR VENTAS (CON EVENT LISTENER REAL)
+    const btnLimpiarVentas = document.getElementById("btn-limpiar-ventas");
+    if (btnLimpiarVentas) {
+        btnLimpiarVentas.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            document.getElementById("filtroFecha").value = "";
+
+            document.querySelectorAll("#ventas-cortas tr, #ventas-todas tr")
+                .forEach(fila => fila.style.display = "");
+
+            document.getElementById("ventas-cortas").style.display = "table-row-group";
+            document.getElementById("ventas-todas").style.display = "none";
+            document.getElementById("filtro-container").style.display = "none";
+            document.getElementById("btn-ventas").innerText = "Ver todas";
+
+            ventasMostradas = false;
+        });
+    }
+
+    // 🧹 LIMPIAR GASTOS
+    const btnLimpiarGastos = document.getElementById("btn-limpiar-gastos");
+    if (btnLimpiarGastos) {
+        btnLimpiarGastos.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            document.getElementById("filtroFechaGastos").value = "";
+
+            document.querySelectorAll("#gastos-cortos tr, #gastos-todos tr")
+                .forEach(fila => fila.style.display = "");
+
+            document.getElementById("gastos-cortos").style.display = "table-row-group";
+            document.getElementById("gastos-todos").style.display = "none";
+            document.getElementById("filtro-gastos").style.display = "none";
+            document.getElementById("btn-gastos").innerText = "Ver todos";
+
+            gastosMostrados = false;
+        });
+    }
+
+});
+</script>
+
+</div>
