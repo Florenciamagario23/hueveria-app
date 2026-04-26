@@ -1,28 +1,102 @@
-from flask import Flask, render_template, request, redirect, session
-import pyodbc
+from flask import Flask, render_template, request, redirect, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import sqlite3
 import pandas as pd
 import io
-from flask import send_file
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta"
 
 
-# 🔌 CONEXIÓN SQL SERVER
+# 🔌 CONEXIÓN SQLITE
 def conectar():
     try:
-        conn = pyodbc.connect(
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=NOTEBOOKFLOR\\SQLEXPRESS;"
-            "DATABASE=hueveria_losprimos;"
-            "Trusted_Connection=yes;"
-        )
+        conn = sqlite3.connect("database.db")
+        conn.row_factory = sqlite3.Row
         return conn
     except Exception as e:
         print("ERROR:", e)
         return None
+
+
+# 🧱 CREAR TABLAS
+def crear_tablas():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario TEXT,
+        contraseña TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS productos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT,
+        stock_inicial INTEGER DEFAULT 0,
+        stock_actual INTEGER,
+        precio REAL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ventas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        producto_id INTEGER,
+        cantidad INTEGER,
+        total REAL,
+        fecha TEXT,
+        metodo_pago_id INTEGER,
+        promocion_id INTEGER
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS gastos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descripcion TEXT,
+        monto REAL,
+        fecha TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS historial (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT,
+        descripcion TEXT,
+        producto_id INTEGER,
+        cantidad INTEGER,
+        monto REAL,
+        fecha TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+# 👤 USUARIO INICIAL
+def crear_usuario():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    usuarios = ["Micaela", "Magali", "Francisco"]
+    password = generate_password_hash("Familia26@")
+
+    for u in usuarios:
+        cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (u,))
+        if not cursor.fetchone():
+            cursor.execute(
+                "INSERT INTO usuarios (usuario, contraseña) VALUES (?, ?)",
+                (u, password)
+            )
+
+    conn.commit()
+    conn.close()
 
 
 # 🔐 LOGIN
@@ -33,17 +107,13 @@ def login():
         password = request.form["password"]
 
         conn = conectar()
-        if not conn:
-            return "⚠️ Error de conexión"
-
         cursor = conn.cursor()
 
         cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (usuario,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user[2], password):
-            session["usuario"] = user[1]
-            session["usuario_id"] = user[0]
+        if user and check_password_hash(user["contraseña"], password):
+            session["usuario"] = user["usuario"]
             return redirect("/")
         else:
             return "❌ Datos incorrectos"
@@ -51,7 +121,6 @@ def login():
     return render_template("login.html")
 
 
-# 🚪 LOGOUT
 @app.route("/logout")
 def logout():
     session.clear()
@@ -67,91 +136,43 @@ def inicio():
     conn = conectar()
     cursor = conn.cursor()
 
-    # 💰 TOTAL VENTAS
-    cursor.execute("SELECT ISNULL(SUM(total), 0) FROM ventas")
+    cursor.execute("SELECT IFNULL(SUM(total),0) FROM ventas")
     ventas_total = cursor.fetchone()[0]
 
-    # 💸 TOTAL GASTOS
-    cursor.execute("SELECT ISNULL(SUM(monto), 0) FROM gastos")
+    cursor.execute("SELECT IFNULL(SUM(monto),0) FROM gastos")
     gastos_total = cursor.fetchone()[0]
 
-    # 📈 GANANCIA
     ganancia = ventas_total - gastos_total
 
-    # PRODUCTOS
-    cursor.execute("SELECT id, nombre, stock_inicial, stock_actual, precio FROM productos")
+    cursor.execute("SELECT * FROM productos")
     productos = cursor.fetchall()
 
-    # VENTAS
-    cursor.execute("""
-        SELECT TOP 5 id, fecha, total
-        FROM ventas
-        ORDER BY fecha DESC
-    """)
-    ventas = cursor.fetchall()
-
-    # VENTAS ÚLTIMAS
-    cursor.execute("""
-    SELECT TOP 5 v.id, v.fecha, p.nombre, v.cantidad, v.total, mp.nombre
-    FROM ventas v
-    JOIN productos p ON v.producto_id = p.id
-    LEFT JOIN metodos_pago mp ON v.metodo_pago_id = mp.id
-    ORDER BY v.fecha DESC
-""")
+    cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC LIMIT 5")
     ventas_ultimas = cursor.fetchall()
 
-# TODAS LAS VENTAS
-    cursor.execute("""
-    SELECT v.id, v.fecha, p.nombre, v.cantidad, v.total, mp.nombre
-    FROM ventas v
-    JOIN productos p ON v.producto_id = p.id
-    LEFT JOIN metodos_pago mp ON v.metodo_pago_id = mp.id
-    ORDER BY v.fecha DESC
-""")
+    cursor.execute("SELECT * FROM ventas ORDER BY fecha DESC")
     ventas_todas = cursor.fetchall()
 
-    # METODOS DE PAGO
-    cursor.execute("SELECT id, nombre FROM metodos_pago")
-    metodos_pago = cursor.fetchall()
-
-    # 🔥 PROMOCIONES (ESTO ES LO NUEVO)
-    cursor.execute("SELECT id, descripcion, precio FROM promociones")
-    promociones = cursor.fetchall()
-
-
-    # 💸 GASTOS ÚLTIMOS
-    cursor.execute("""
-    SELECT TOP 5 id, descripcion, monto, fecha
-    FROM gastos
-    ORDER BY fecha DESC
-""")
+    cursor.execute("SELECT * FROM gastos ORDER BY fecha DESC LIMIT 5")
     gastos_ultimos = cursor.fetchall()
 
-    # 💸 TODOS LOS GASTOS
-    cursor.execute("""
-    SELECT id, descripcion, monto, fecha
-    FROM gastos
-    ORDER BY fecha DESC
-""")
+    cursor.execute("SELECT * FROM gastos ORDER BY fecha DESC")
     gastos_todos = cursor.fetchall()
 
-        
-
     return render_template(
-    "ventas.html",
-    productos=productos,
-    metodos_pago=metodos_pago,
-    promociones=promociones,
-    ventas_ultimas=ventas_ultimas,
-    ventas_todas=ventas_todas,
-    gastos_ultimos=gastos_ultimos,   # 👈 ESTO FALTABA
-    gastos_todos=gastos_todos,       # 👈 Y ESTO
-    ventas_total=ventas_total,
-    gastos_total=gastos_total,
-    ganancia=ganancia
-)
+        "ventas.html",
+        productos=productos,
+        ventas_ultimas=ventas_ultimas,
+        ventas_todas=ventas_todas,
+        gastos_ultimos=gastos_ultimos,
+        gastos_todos=gastos_todos,
+        ventas_total=ventas_total,
+        gastos_total=gastos_total,
+        ganancia=ganancia
+    )
 
-# ➕ AGREGAR PRODUCTO
+
+# ➕ PRODUCTO
 @app.route("/agregar_producto", methods=["POST"])
 def agregar_producto():
     nombre = request.form["nombre"]
@@ -172,108 +193,63 @@ def agregar_producto():
     return redirect("/")
 
 
-# 💰 AGREGAR VENTA
+# 💰 VENTA
 @app.route("/agregar_venta", methods=["POST"])
 def agregar_venta():
-    try:
-        producto_id = int(request.form["producto_id"])
-        cantidad = int(request.form["cantidad"])
+    producto_id = int(request.form["producto_id"])
+    cantidad = int(request.form["cantidad"])
 
-        promocion_id = request.form.get("promocion_id")
-        metodo_pago_id = request.form.get("metodo_pago_id")
+    conn = conectar()
+    cursor = conn.cursor()
 
-        # ✅ LIMPIAR DATOS
-        promocion_id = int(promocion_id) if promocion_id else None
-        metodo_pago_id = int(metodo_pago_id) if metodo_pago_id else None
+    cursor.execute("SELECT precio, stock_actual FROM productos WHERE id = ?", (producto_id,))
+    producto = cursor.fetchone()
 
-        conn = conectar()
-        cursor = conn.cursor()
+    if not producto:
+        return "Producto no encontrado"
 
-        # 🔍 PRODUCTO
-        cursor.execute("SELECT precio, stock_actual FROM productos WHERE id = ?", (producto_id,))
-        producto = cursor.fetchone()
+    precio, stock = producto
 
-        if not producto:
-            return "Producto no encontrado"
+    if cantidad > stock:
+        return "Sin stock"
 
-        precio, stock = producto
+    total = precio * cantidad
 
-        # 🔥 PROMOCIÓN
-        if promocion_id:
-            cursor.execute("SELECT precio FROM promociones WHERE id = ?", (promocion_id,))
-            promo = cursor.fetchone()
+    cursor.execute("""
+        INSERT INTO ventas (fecha, producto_id, cantidad, total)
+        VALUES (datetime('now'), ?, ?, ?)
+    """, (producto_id, cantidad, total))
 
-            if promo:
-                precio = promo[0]
-            else:
-                return "❌ Promoción inválida"
+    cursor.execute("""
+        UPDATE productos
+        SET stock_actual = stock_actual - ?
+        WHERE id = ?
+    """, (cantidad, producto_id))
 
-        # 🚫 STOCK
-        if cantidad > stock:
-            return "❌ Sin stock"
+    conn.commit()
+    conn.close()
 
-        total = precio * cantidad
+    return redirect("/")
 
-        # 💾 INSERT
-        cursor.execute("""
-            INSERT INTO ventas (fecha, producto_id, cantidad, total, metodo_pago_id, promocion_id)
-            VALUES (GETDATE(), ?, ?, ?, ?, ?)
-        """, (producto_id, cantidad, total, metodo_pago_id, promocion_id))
 
-        # 📦 ACTUALIZAR STOCK
-        cursor.execute("""
-            UPDATE productos
-            SET stock_actual = stock_actual - ?
-            WHERE id = ?
-        """, (cantidad, producto_id))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/")
-
-    except Exception as e:
-     print("🔥 ERROR REAL:", e)
-    return f"<h1>ERROR: {e}</h1>"
-
+# ❌ ELIMINAR VENTA
 @app.route("/eliminar_venta/<int:id>", methods=["POST"])
 def eliminar_venta(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    # 🔍 BUSCAR DATOS
-    cursor.execute("""
-        SELECT producto_id, cantidad, total
-        FROM ventas
-        WHERE id = ?
-    """, (id,))
+    cursor.execute("SELECT producto_id, cantidad, total FROM ventas WHERE id = ?", (id,))
     venta = cursor.fetchone()
 
-    if not venta:
-        return "Venta no encontrada"
+    if venta:
+        producto_id, cantidad, total = venta
 
-    producto_id, cantidad, total = venta
+        cursor.execute("""
+            INSERT INTO historial (tipo, producto_id, cantidad, monto)
+            VALUES ('VENTA ELIMINADA', ?, ?, ?)
+        """, (producto_id, cantidad, total))
 
-    # 🔍 NOMBRE PRODUCTO
-    cursor.execute("SELECT nombre FROM productos WHERE id = ?", (producto_id,))
-    producto = cursor.fetchone()
-    nombre_producto = producto[0]
-
-    # 🔄 DEVOLVER STOCK
-    cursor.execute("""
-        UPDATE productos
-        SET stock_actual = stock_actual + ?
-        WHERE id = ?
-    """, (cantidad, producto_id))
-
-    # 📝 HISTORIAL (CORRECTO)
-    cursor.execute("""
-        INSERT INTO historial (tipo, descripcion, producto_id, cantidad, monto)
-        VALUES ('VENTA ELIMINADA', ?, ?, ?, ?)
-    """, (nombre_producto, producto_id, cantidad, total))
-
-    # ❌ ELIMINAR
-    cursor.execute("DELETE FROM ventas WHERE id = ?", (id,))
+        cursor.execute("DELETE FROM ventas WHERE id = ?", (id,))
 
     conn.commit()
     conn.close()
@@ -281,355 +257,65 @@ def eliminar_venta(id):
     return redirect("/")
 
 
-    
-@app.route("/editar_precio/<int:id>", methods=["POST"])
-def editar_precio(id):
-    try:
-        nuevo_precio = float(request.form["precio"])
-
-        conn = conectar()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE productos
-            SET precio = ?
-            WHERE id = ?
-        """, (nuevo_precio, id))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/")
-
-    except Exception as e:
-        print("ERROR EDITAR PRECIO:", e)
-        return "❌ Error al actualizar precio"
-    
-
-@app.route("/eliminar_producto/<int:id>")
-def eliminar_producto(id):
-    conn = conectar()
-    cursor = conn.cursor()
-
-    # 🔍 BUSCAR PRODUCTO
-    cursor.execute("SELECT nombre FROM productos WHERE id = ?", (id,))
-    producto = cursor.fetchone()
-
-    if producto:
-        nombre = producto[0]
-
-        # 📝 HISTORIAL
-        cursor.execute("""
-            INSERT INTO historial (tipo, descripcion)
-            VALUES ('PRODUCTO ELIMINADO', ?)
-        """, (nombre,))
-
-    # ❌ BORRAR
-    cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/")
-    
-@app.route("/editar_producto", methods=["POST"])
-def editar_producto():
-    try:
-        producto_id = int(request.form["producto_id"])
-        precio = float(request.form["precio"])
-        stock_inicial = int(request.form["stock_inicial"])
-
-        conn = conectar()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE productos
-            SET precio = ?, stock_inicial = ?
-            WHERE id = ?
-        """, (precio, stock_inicial, producto_id))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/")
-
-    except Exception as e:
-        print("ERROR EDITAR PRODUCTO:", e)
-        return f"❌ Error: {e}"    
-
+# 💸 GASTO
 @app.route("/agregar_gasto", methods=["POST"])
 def agregar_gasto():
-    try:
-        descripcion = request.form["descripcion"]
-        monto = float(request.form["monto"])
+    descripcion = request.form["descripcion"]
+    monto = float(request.form["monto"])
 
-        conn = conectar()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            INSERT INTO gastos (descripcion, monto, fecha)
-            VALUES (?, ?, GETDATE())
-        """, (descripcion, monto))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/")
-
-    except Exception as e:
-        print("ERROR AGREGAR GASTO:", e)
-        return f"❌ Error: {e}"
-    
-
-@app.route("/eliminar_gasto/<int:id>", methods=["POST"])
-def eliminar_gasto(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    # 🔍 BUSCAR GASTO
-    cursor.execute("SELECT descripcion, monto FROM gastos WHERE id = ?", (id,))
-    gasto = cursor.fetchone()
-
-    if gasto:
-        descripcion, monto = gasto
-
-        # 📝 HISTORIAL
-        cursor.execute("""
-    INSERT INTO historial (tipo, descripcion, monto)
-    VALUES ('GASTO ELIMINADO', ?, ?)
-""", (descripcion, monto))
-
-    # ❌ BORRAR
-    cursor.execute("DELETE FROM gastos WHERE id = ?", (id,))
+    cursor.execute("""
+        INSERT INTO gastos (descripcion, monto, fecha)
+        VALUES (?, ?, datetime('now'))
+    """, (descripcion, monto))
 
     conn.commit()
     conn.close()
 
     return redirect("/")
-    
+
+
+# 📊 HISTORIAL
 @app.route("/historial")
-def ver_historial():
+def historial():
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("""
-    SELECT id, tipo, descripcion, fecha
-    FROM historial
-    ORDER BY fecha DESC
-""")
+    cursor.execute("SELECT * FROM historial ORDER BY fecha DESC")
+    data = cursor.fetchall()
 
-    historial = cursor.fetchall()
     conn.close()
 
-    return render_template("historial.html", historial=historial) 
+    return render_template("historial.html", historial=data)
 
-@app.route("/eliminar_historial/<int:id>", methods=["POST"])
-def eliminar_historial(id):
-    conn = conectar()
-    cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM historial WHERE id = ?", (id,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/historial")
-
-@app.route("/restaurar_historial/<int:id>", methods=["POST"])
-def restaurar_historial(id):
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT tipo, producto_id, cantidad, monto
-        FROM historial
-        WHERE id = ?
-    """, (id,))
-    h = cursor.fetchone()
-
-    if not h:
-        return "Registro no encontrado"
-
-    tipo, producto_id, cantidad, monto = h
-
-    # 🔁 RESTAURAR VENTA COMPLETA
-    if tipo == "VENTA ELIMINADA":
-        cursor.execute("""
-            INSERT INTO ventas (fecha, producto_id, cantidad, total)
-            VALUES (GETDATE(), ?, ?, ?)
-        """, (producto_id, cantidad, monto))
-
-        cursor.execute("""
-            UPDATE productos
-            SET stock_actual = stock_actual - ?
-            WHERE id = ?
-        """, (cantidad, producto_id))
-
-    # 🔁 RESTAURAR GASTO
-    elif tipo == "GASTO ELIMINADO":
-        cursor.execute("""
-            INSERT INTO gastos (descripcion, monto, fecha)
-            VALUES ('Restaurado', ?, GETDATE())
-        """, (monto,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/historial")
-
-@app.route("/ingresar_stock", methods=["POST"])
-def ingresar_stock():
-    try:
-        producto_id = int(request.form["producto_id"])
-        cantidad = int(request.form["cantidad"])
-
-        conn = conectar()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            UPDATE productos
-            SET stock_actual = stock_actual + ?
-            WHERE id = ?
-        """, (cantidad, producto_id))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/")
-
-    except Exception as e:
-        print("ERROR STOCK:", e)
-        return "Error al ingresar stock"
-    
+# 📁 EXCEL SIMPLE (estable)
 @app.route("/excel")
-def exportar_excel():
-    import pandas as pd
-    import io
-    from flask import send_file
-    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-    from openpyxl.chart import BarChart, Reference
-
+def excel():
     conn = conectar()
 
-    ventas = pd.read_sql("""
-        SELECT v.fecha,
-               p.nombre AS Producto,
-               v.cantidad AS Cantidad,
-               v.total AS Total
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-    """, conn)
-
-    gastos = pd.read_sql("""
-        SELECT fecha,
-               descripcion AS Descripción,
-               monto AS Monto
-        FROM gastos
-    """, conn)
-
-    ranking = pd.read_sql("""
-        SELECT p.nombre AS Producto,
-               SUM(v.cantidad) AS Cantidad
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        GROUP BY p.nombre
-        ORDER BY Cantidad DESC
-    """, conn)
+    ventas = pd.read_sql("SELECT * FROM ventas", conn)
+    gastos = pd.read_sql("SELECT * FROM gastos", conn)
 
     conn.close()
-
-    # 🔥 FORMATO FECHA
-    ventas["Fecha"] = pd.to_datetime(ventas["fecha"]).dt.strftime("%d/%m/%Y %H:%M")
-    ventas = ventas.drop(columns=["fecha"])
-    ventas = ventas[["Fecha", "Producto", "Cantidad", "Total"]]
-
-    gastos["Fecha"] = pd.to_datetime(gastos["fecha"]).dt.strftime("%d/%m/%Y %H:%M")
-    gastos = gastos.drop(columns=["fecha"])
-    gastos = gastos[["Fecha", "Descripción", "Monto"]]
-
-    # 📊 RESUMEN
-    total_ventas = ventas["Total"].astype(float).sum()
-    total_gastos = gastos["Monto"].astype(float).sum()
-    ganancia = total_ventas - total_gastos
-
-    resumen = pd.DataFrame({
-        "Concepto": ["Ventas", "Gastos", "Ganancia"],
-        "Monto": [total_ventas, total_gastos, ganancia]
-    })
 
     output = io.BytesIO()
 
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-
         ventas.to_excel(writer, sheet_name="Ventas", index=False)
         gastos.to_excel(writer, sheet_name="Gastos", index=False)
-        ranking.to_excel(writer, sheet_name="Ranking", index=False)
-        resumen.to_excel(writer, sheet_name="Resumen", index=False)
-
-        # 🎨 ESTILOS
-        header_fill = PatternFill(start_color="34495E", fill_type="solid")
-        header_font = Font(color="FFFFFF", bold=True)
-        center = Alignment(horizontal="center")
-        thin = Border(left=Side(style='thin'), right=Side(style='thin'),
-                      top=Side(style='thin'), bottom=Side(style='thin'))
-
-        for name, sheet in writer.sheets.items():
-
-            sheet.column_dimensions["A"].width = 20
-            sheet.column_dimensions["B"].width = 30
-            sheet.column_dimensions["C"].width = 15
-            sheet.column_dimensions["D"].width = 15
-
-            for cell in sheet[1]:
-                cell.fill = header_fill
-                cell.font = header_font
-                cell.alignment = center
-                cell.border = thin
-
-            for i, row in enumerate(sheet.iter_rows(min_row=2), start=2):
-                for cell in row:
-                    cell.border = thin
-                    cell.alignment = center
-
-                    if name == "Ventas" and cell.column_letter == "D":
-                        cell.number_format = '"$"#,##0'
-
-                    if name == "Gastos" and cell.column_letter == "C":
-                        cell.number_format = '"$"#,##0'
-
-                    if name == "Resumen" and cell.column_letter == "B":
-                        cell.number_format = '"$"#,##0'
-
-                if i % 2 == 0:
-                    for cell in row:
-                        cell.fill = PatternFill(start_color="F2F2F2", fill_type="solid")
-
-        # 📊 GRÁFICO RANKING
-        sheet_ranking = writer.sheets["Ranking"]
-
-        chart = BarChart()
-        chart.title = "Productos más vendidos"
-
-        max_filas = min(len(ranking), 5) + 1
-
-        data = Reference(sheet_ranking, min_col=2, min_row=1, max_row=max_filas)
-        categories = Reference(sheet_ranking, min_col=1, min_row=2, max_row=max_filas)
-
-        chart.add_data(data, titles_from_data=True)
-        chart.set_categories(categories)
-
-        chart.width = 12
-        chart.height = 7
-
-        sheet_ranking.add_chart(chart, "E2")
 
     output.seek(0)
 
-    return send_file(
-        output,
-        download_name="reporte_pro.xlsx",
-        as_attachment=True
-    )
-# ▶️ EJECUTAR
+    return send_file(output, download_name="reporte.xlsx", as_attachment=True)
+
+
+# 🚀 INIT
+crear_tablas()
+crear_usuario()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
