@@ -3,6 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import pandas as pd
 import io
+import urllib.parse
+from flask import render_template
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta"
@@ -126,10 +128,111 @@ def logout():
     session.clear()
     return redirect("/login")
 
+@app.route("/")
+def home():
+    carrito = session.get("carrito", [])
+
+    cantidad_carrito = sum(item["cantidad"] for item in carrito)
+
+    return render_template("home.html", cantidad_carrito=cantidad_carrito)
+
+# ➕ AGREGAR AL CARRITO
+@app.route("/agregar", methods=["POST"])
+def agregar():
+    nombre = request.form.get("producto")
+    precio = int(request.form.get("precio"))
+
+    if "carrito" not in session:
+        session["carrito"] = []
+
+    carrito = session["carrito"]
+
+    # 🔥 LIMPIA formato viejo automáticamente
+    if carrito and isinstance(carrito[0], str):
+        session["carrito"] = []
+        carrito = []
+
+    for item in carrito:
+        if item["nombre"] == nombre:
+            item["cantidad"] += 1
+            session.modified = True
+            return redirect("/")
+
+    carrito.append({
+        "nombre": nombre,
+        "precio": precio,
+        "cantidad": 1
+    })
+
+    session.modified = True
+    return redirect("/")
+
+
+# 🛒 VER CARRITO
+@app.route("/carrito")
+def carrito():
+    carrito = session.get("carrito", [])
+
+    total = sum(item["precio"] * item["cantidad"] for item in carrito)
+
+    return render_template("carrito.html", carrito=carrito, total=total)
+
+
+@app.route("/sumar/<nombre>")
+def sumar(nombre):
+    for item in session["carrito"]:
+        if item["nombre"] == nombre:
+            item["cantidad"] += 1
+            break
+
+    session.modified = True
+    return redirect("/carrito")
+
+
+@app.route("/restar/<nombre>")
+def restar(nombre):
+    for item in session["carrito"]:
+        if item["nombre"] == nombre:
+            item["cantidad"] -= 1
+
+            if item["cantidad"] <= 0:
+                session["carrito"].remove(item)
+
+            break
+
+    session.modified = True
+    return redirect("/carrito")
+
+# ❌ VACIAR CARRITO
+@app.route("/vaciar")
+def vaciar():
+    session.pop("carrito", None)
+    return redirect("/carrito")
+
+
+# 📲 ENVIAR A WHATSAPP
+@app.route("/enviar")
+def enviar():
+    carrito = session.get("carrito", [])
+
+    mensaje = "Hola, quiero pedir:\n\n"
+    total = 0
+
+    for item in carrito:
+        subtotal = item["precio"] * item["cantidad"]
+        total += subtotal
+
+        mensaje += f"{item['nombre']} x{item['cantidad']} = ${subtotal}\n"
+
+    mensaje += f"\nTOTAL: ${total}"
+
+    mensaje_codificado = urllib.parse.quote(mensaje)
+
+    return redirect(f"https://wa.me/5493564593629?text={mensaje_codificado}")
 
 # 🏠 INICIO
-@app.route("/")
-def inicio():
+@app.route("/dashboard")
+def dashboard():
     if "usuario" not in session:
         return redirect("/login")
 
@@ -158,6 +261,8 @@ def inicio():
 
     cursor.execute("SELECT * FROM gastos ORDER BY fecha DESC")
     gastos_todos = cursor.fetchall()
+
+    conn.close()
 
     return render_template(
         "ventas.html",
@@ -315,6 +420,7 @@ def excel():
 # 🚀 INIT
 crear_tablas()
 crear_usuario()
+
 
 
 if __name__ == "__main__":
