@@ -72,7 +72,7 @@ def crear_usuario():
     cursor = conn.cursor()
 
     usuarios = ["Micaela", "Magali", "Francisco"]
-    password = generate_password_hash("Familia2026@")
+    password = generate_password_hash("Familia26@")
 
     for u in usuarios:
         cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (u,))
