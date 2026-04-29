@@ -148,13 +148,21 @@ def actualizar_stock_diario():
 
 
 # 🔐 LOGIN
+from werkzeug.security import check_password_hash
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        usuario = request.form["usuario"]
-        password = request.form["password"]
+        usuario = request.form["usuario"].strip()
+        password = request.form["password"].strip()
 
-        if usuario in ["Micaela", "Magali", "Francisco"] and password == "Familia26@":
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (usuario,))
+        user = cursor.fetchone()
+
+        if user and check_password_hash(user["contraseña"], password):
             session["usuario"] = usuario
             return redirect("/dashboard")
 
