@@ -704,6 +704,28 @@ def exportar_excel():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+def arreglar_db():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("ALTER TABLE ventas ADD COLUMN metodo_pago TEXT")
+    except:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE gastos ADD COLUMN eliminado INTEGER DEFAULT 0")
+    except:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE ventas ADD COLUMN eliminado INTEGER DEFAULT 0")
+    except:
+        pass
+
+    conn.commit()
+    conn.close()
+
 # 🚀 INIT
 crear_tablas()
 arreglar_tabla_productos()   # 👈 PRIMERO
