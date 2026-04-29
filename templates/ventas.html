@@ -11,13 +11,10 @@
             📊 Historial
         </a>
 
-        <form action="/excel" method="GET" class="d-flex align-items-center gap-2">
+        <a href="/exportar_excel" class="btn btn-success btn-sm">
+    📥 Excel
+</a>
         
-            <button class="btn btn-success btn-sm">
-                📥 Excel
-            </button>
-
-        </form>
 
     </div>
 
@@ -72,30 +69,37 @@
 
 <div class="mb-2">
 <label>Producto:</label>
-<select name="producto_id" class="form-control">
-  {% for p in productos %}
-    <option value="{{ p[0] }}">{{ p[1] }}</option>
-  {% endfor %}
+<select name="producto_id" class="form-control mb-3" required>
+    <option value="">Seleccionar producto</option>
+
+    <option value="1">Maple de huevo chico blanco-color</option>
+
+    <option value="2">Maple de huevo mediano blanco-color</option>
+    
+    <option value="3">Maple de huevo medianito blanco-color</option>
+
+    <option value="4">Maple de huevo grande blanco-color</option>
+    
 </select>
 </div>
 
 <div class="mb-2">
 <label>Promoción:</label>
-<select name="promocion_id" class="form-control">
-  <option value="">Sin promoción</option>
-  {% for promo in promociones %}
-    <option value="{{ promo[0] }}">{{ promo[1] }}</option>
-  {% endfor %}
+<select name="promocion" class="form-control mb-3">
+    <option>Sin promoción</option>
+    <option>2 maples medianitos</option>
 </select>
 </div>
 
 <div class="mb-2">
     <label>Método de pago</label>
-    <select name="metodo_pago_id" class="form-control" required>
-        {% for m in metodos_pago %}
-            <option value="{{ m[0] }}">{{ m[1] }}</option>
-        {% endfor %}
-    </select>
+    <select name="metodo_pago" class="form-control mb-3" required>
+    <option value="">Seleccionar método de pago</option>
+    <option>Efectivo</option>
+    <option>Transferencia</option>
+    <option>Mercado Pago</option>
+    <option>Débito</option>
+</select>
 </div>
 
 <div class="mb-2">
@@ -146,21 +150,19 @@
 <tbody id="ventas-cortas">
 {% for v in ventas_ultimas %}
 <tr>
-  <td>{{ v[1].strftime("%d/%m/%Y %H:%M:%S") }}</td>
-  <td>{{ v[2] }}</td>
-  <td>{{ v[3] }}</td>
-  <td>${{ v[4] }}</td>
-  <td>{{ v[5] }}</td>
- <td>
-
-<form method="POST" action="/eliminar_venta/{{ v[0] }}">
-    <button type="submit" 
-            class="btn btn-danger btn-sm"
+  <td>{{ v.fecha }}</td>
+  <td>{{ v.nombre }}</td>
+  <td>{{ v.cantidad }}</td>
+  <td>${{ v.total }}</td>
+  <td>{{ v.metodo_pago }}</td>
+  <td>
+    <form method="POST" action="/eliminar_venta/{{ v.id }}">
+        <button type="submit" class="btn btn-danger btn-sm"
             onclick="return confirm('¿Eliminar?')">
-        🗑
-    </button>
-</form>
-</td>
+            🗑
+        </button>
+    </form>
+  </td>
 </tr>
 {% endfor %}
 </tbody>
@@ -168,16 +170,16 @@
 <tbody id="ventas-todas" style="display:none;">
 {% for v in ventas_todas %}
 <tr>
-  <td>{{ v[1].strftime("%d/%m/%Y %H:%M:%S") }}</td>
-  <td>{{ v[2] }}</td>
-  <td>{{ v[3] }}</td>
-  <td>${{ v[4] }}</td>
-  <td>{{ v[5] }}</td>
+  <td>{{ v.fecha }}</td>
+  <td>{{ v.nombre }}</td>
+  <td>{{ v.cantidad }}</td>
+  <td>${{ v.total }}</td>
+  <td>{{ v.metodo_pago }}</td>
   <td>
-<form method="POST" action="/eliminar_venta/{{ v[0] }}">
-  <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-</form>
-</td>
+    <form method="POST" action="/eliminar_venta/{{ v.id }}">
+      <button type="submit" class="btn btn-danger btn-sm">🗑</button>
+    </form>
+  </td>
 </tr>
 {% endfor %}
 </tbody>
@@ -214,14 +216,14 @@
 <tbody id="gastos-cortos">
 {% for g in gastos_ultimos %}
 <tr>
-  <td>{{ g[3].strftime("%d/%m/%Y %H:%M:%S") }}</td>
-<td>{{ g[1] }}</td> <!-- descripcion -->
-<td>${{ g[2] }}</td> <!-- monto -->
-<td>
-<form method="POST" action="/eliminar_gasto/{{ g[0] }}">
-  <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-</form>
-</td>
+  <td>{{ g.fecha }}</td>
+  <td>{{ g.descripcion }}</td>
+  <td>${{ g.monto }}</td>
+  <td>
+    <form method="POST" action="/eliminar_gasto/{{ g.id }}">
+      <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+    </form>
+  </td>
 </tr>
 {% endfor %}
 </tbody>
@@ -229,17 +231,17 @@
 <tbody id="gastos-todos" style="display:none;">
 {% for g in gastos_todos %}
 <tr>
-  <td>{{ g[3].strftime("%d/%m/%Y %H:%M:%S") }}</td>
-<td>{{ g[1] }}</td>
-<td>${{ g[2] }}</td>
-<td>
-  <form action="/eliminar_gasto/{{ g[0] }}" method="POST" style="display:inline;">
-    <button type="submit" class="btn btn-danger btn-sm"
+  <td>{{ g.fecha }}</td>
+  <td>{{ g.descripcion }}</td>
+  <td>${{ g.monto }}</td>
+  <td>
+    <form action="/eliminar_gasto/{{ g.id }}" method="POST">
+      <button type="submit" class="btn btn-danger btn-sm"
         onclick="return confirm('¿Eliminar gasto?')">
         🗑
-    </button>
-</form>
-</td>
+      </button>
+    </form>
+  </td>
 </tr>
 {% endfor %}
 </tbody>
@@ -267,63 +269,48 @@
   </div>
 
 </form>
-<h4>📦 Productos / Stock</h4>
+<h3 class="mt-4">📦 Productos / Stock</h3>
 
-<table class="table table-bordered align-middle">
+<table class="table table-bordered bg-white text-center">
+    <thead class="table-dark">
+        <tr>
+            <th>Producto</th>
+            <th>Stock inicial</th>
+            <th>Stock actual</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
 
-<tr>
-  <th>Producto</th>
-  <th>Stock inicial</th>
-  <th>Stock actual</th>
-  <th>Precio</th>
-  <th>Acciones</th>
-</tr>
+    <tbody>
+        {% for p in productos %}
+        <tr>
 
-{% for p in productos %}
-<tr>
+            <td>{{ p.nombre }}</td>
 
-<form action="/editar_producto" method="POST">
+            <td>{{ p.stock_inicial }}</td>
 
-  <td>{{ p[1] }}</td>
+            <td>
+                <form method="POST" action="/actualizar_stock/{{ p.id }}">
+                    <input type="number" name="stock" value="{{ p.stock_actual }}" class="form-control text-center">
+            </td>
 
-  <td>
-    <input type="number" name="stock_inicial" value="{{ p[2] }}"
-           class="form-control form-control-sm text-center" style="max-width:90px;">
-  </td>
+            <td>
+                    <input type="number" name="precio" value="{{ p.precio }}" class="form-control text-center">
+            </td>
 
-  <td class="text-center">
-    {{ p[3] }}
-  </td>
+            <td>
+                    <button class="btn btn-success btn-sm">💾</button>
+                </form>
 
-  <td>
-    <input type="number" name="precio" value="{{ p[4] }}"
-           class="form-control form-control-sm text-center" style="max-width:100px;">
-  </td>
+                <form method="POST" action="/eliminar_producto/{{ p.id }}" style="display:inline;">
+                    <button class="btn btn-danger btn-sm">🗑</button>
+                </form>
+            </td>
 
-  <input type="hidden" name="producto_id" value="{{ p[0] }}">
-
-  <td class="d-flex gap-2">
-
-    <!-- GUARDAR -->
-    <button type="submit" class="btn btn-success btn-sm">
-      💾
-    </button>
-
-</form>
-
-    <!-- ELIMINAR -->
-    <form method="POST" action="/eliminar_producto/{{ p[0] }}">
-      <button type="submit" class="btn btn-danger btn-sm"
-              onclick="return confirm('¿Eliminar producto?')">
-        🗑
-      </button>
-    </form>
-
-  </td>
-
-</tr>
-{% endfor %}
-
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 
@@ -335,7 +322,7 @@
 <label>Producto:</label>
 <select name="producto_id" class="form-control">
   {% for p in productos %}
-    <option value="{{ p[0] }}">{{ p[1] }}</option>
+    <option value="{{ p.id }}">{{ p.nombre }}</option>
   {% endfor %}
 </select>
 </div>

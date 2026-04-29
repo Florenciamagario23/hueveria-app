@@ -121,6 +121,23 @@
     transform: scale(1.1);
 }
 
+.horarios-box {
+    position: fixed;
+    bottom: 90px; /* arriba del botón de WhatsApp */
+    right: 20px;
+    width: 250px;
+    background: #c0392b;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    z-index: 999;
+    font-size: 14px;
+}
+
+.horarios-box h5, 
+.horarios-box h6 {
+    margin-bottom: 5px;
+}
     </style>
 </head>
 
@@ -170,8 +187,20 @@
 
     <h2 class="text-center mb-4 fw-bold">Nuestros productos</h2>
 
-    <div class="row">
+    <div class="horarios-box shadow">
+    
+    <h5 class="mb-2">🕒 Horarios</h5>
+    <p class="mb-1"><strong>Lunes a Viernes:</strong> 10:00 a 20:30</p>
+    <p class="mb-2"><strong>Sábados:</strong> 10:00 a 14:00</p>
 
+    <hr>
+
+    <h6 class="mt-2">📍 Dirección</h6>
+    <p class="mb-0">Paraná 478, Nueva Córdoba, Córdoba</p>
+
+</div>
+
+    <div class="row">
         <!-- GRANDE BLANCO -->
         <div class="col-md-3 mb-4">
             <div class="card shadow">
