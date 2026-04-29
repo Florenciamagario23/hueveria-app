@@ -72,7 +72,7 @@ def crear_usuario():
     cursor = conn.cursor()
 
     usuarios = ["Micaela", "Magali", "Francisco"]
-    password = generate_password_hash("Familia2026@")
+    password = generate_password_hash("Familia26@")
 
     for u in usuarios:
         cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (u,))
@@ -154,7 +154,7 @@ def login():
         usuario = request.form["usuario"]
         password = request.form["password"]
 
-        if usuario in ["Micaela", "Magali", "Francisco"] and password == "Familia2026@":
+        if usuario in ["Micaela", "Magali", "Francisco"] and password == "Familia26@":
             session["usuario"] = usuario
             return redirect("/dashboard")
 
