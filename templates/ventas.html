@@ -72,14 +72,12 @@
 <select name="producto_id" class="form-control mb-3" required>
     <option value="">Seleccionar producto</option>
 
-    <option value="1">Maple de huevo chico blanco-color</option>
+    {% for p in productos %}
+        <option value="{{ p.id }}">
+            {{ p.nombre }}
+        </option>
+    {% endfor %}
 
-    <option value="2">Maple de huevo mediano blanco-color</option>
-    
-    <option value="3">Maple de huevo medianito blanco-color</option>
-
-    <option value="4">Maple de huevo grande blanco-color</option>
-    
 </select>
 </div>
 
