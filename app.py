@@ -89,6 +89,14 @@ def cargar_productos_base():
     conn = conectar()
     cursor = conn.cursor()
 
+    # 🔥 VERIFICAR SI YA HAY PRODUCTOS
+    cursor.execute("SELECT COUNT(*) FROM productos")
+    cantidad = cursor.fetchone()[0]
+
+    if cantidad > 0:
+        conn.close()
+        return  # 👈 NO hace nada si ya hay datos
+
     productos = [
         ("MAPLE DE HUEVO CHICO COLOR/BLANCO", 5000),
         ("MAPLE DE HUEVO MEDIANO COLOR/BLANCO", 6000),
@@ -97,12 +105,10 @@ def cargar_productos_base():
     ]
 
     for nombre, precio in productos:
-        cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
-        if not cursor.fetchone():
-            cursor.execute("""
-                INSERT INTO productos (nombre, stock_inicial, stock_actual, precio)
-                VALUES (?, 450, 450, ?)
-            """, (nombre, precio))
+        cursor.execute("""
+            INSERT INTO productos (nombre, stock_inicial, stock_actual, precio)
+            VALUES (?, 450, 450, ?)
+        """, (nombre, precio))
 
     conn.commit()
     conn.close()
@@ -112,12 +118,22 @@ def arreglar_db():
     cursor = conn.cursor()
 
     try:
-      cursor.execute("ALTER TABLE ventas ADD COLUMN metodo_pago TEXT")
+        cursor.execute("ALTER TABLE ventas ADD COLUMN metodo_pago TEXT")
     except:
-      pass
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE ventas ADD COLUMN eliminado INTEGER DEFAULT 0")
+    except:
+        pass
 
     try:
         cursor.execute("ALTER TABLE gastos ADD COLUMN eliminado INTEGER DEFAULT 0")
+    except:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE productos ADD COLUMN fecha_stock TEXT")
     except:
         pass
 
@@ -710,6 +726,10 @@ def arreglar_db():
 
     try:
         cursor.execute("ALTER TABLE ventas ADD COLUMN metodo_pago TEXT")
+    except:
+        pass
+    try:
+     cursor.execute("ALTER TABLE ventas ADD COLUMN eliminado INTEGER DEFAULT 0")
     except:
         pass
 
