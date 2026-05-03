@@ -115,6 +115,9 @@
 
 <!-- TABLA -->
 <h3>📋 Ventas realizadas</h3>
+<p id="info-ventas" class="text-muted">
+  Mostrando {{ ventas_ultimas|length }} de {{ ventas_total_cantidad }}
+</p>
 
 <button id="btn-ventas" onclick="mostrarVentas()" class="btn btn-primary btn-sm mb-2">
   Ver todas
@@ -186,6 +189,9 @@
 </table>
 
 <h4>💸 Gastos</h4>
+<p id="info-gastos" class="text-muted">
+  Mostrando {{ gastos_ultimos|length }} de {{ gastos_total_cantidad }}
+</p>
 
 <button id="btn-gastos" class="btn btn-secondary btn-sm mb-2" onclick="mostrarGastos()">
   Ver todos
@@ -368,35 +374,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 🔵 VENTAS
     window.mostrarVentas = function () {
-        const cortas = document.getElementById("ventas-cortas");
-        const todas = document.getElementById("ventas-todas");
-        const btn = document.getElementById("btn-ventas");
-        const filtro = document.getElementById("filtro-container");
+    const cortas = document.getElementById("ventas-cortas");
+    const todas = document.getElementById("ventas-todas");
+    const btn = document.getElementById("btn-ventas");
+    const filtro = document.getElementById("filtro-container");
+    const info = document.getElementById("info-ventas");
 
-        ventasMostradas = !ventasMostradas;
+    ventasMostradas = !ventasMostradas;
 
-        cortas.style.display = ventasMostradas ? "none" : "table-row-group";
-        todas.style.display = ventasMostradas ? "table-row-group" : "none";
-        filtro.style.display = ventasMostradas ? "block" : "none";
+    cortas.style.display = ventasMostradas ? "none" : "table-row-group";
+    todas.style.display = ventasMostradas ? "table-row-group" : "none";
+    filtro.style.display = ventasMostradas ? "block" : "none";
 
-        btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
-    };
+    btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
+
+    if (ventasMostradas) {
+        info.innerText = "Mostrando todas";
+    } else {
+        info.innerText = `Mostrando ${cortas.children.length} de ${cortas.children.length + todas.children.length}`;
+    }
+};
 
     // 🔴 GASTOS
-    window.mostrarGastos = function () {
-        const cortos = document.getElementById("gastos-cortos");
-        const todos = document.getElementById("gastos-todos");
-        const btn = document.getElementById("btn-gastos");
-        const filtro = document.getElementById("filtro-gastos");
+    window.mostrarVentas = function () {
+    const cortas = document.getElementById("ventas-cortas");
+    const todas = document.getElementById("ventas-todas");
+    const btn = document.getElementById("btn-ventas");
+    const filtro = document.getElementById("filtro-container");
+    const info = document.getElementById("info-ventas");
 
-        gastosMostrados = !gastosMostrados;
+    ventasMostradas = !ventasMostradas;
 
-        cortos.style.display = gastosMostrados ? "none" : "table-row-group";
-        todos.style.display = gastosMostrados ? "table-row-group" : "none";
-        filtro.style.display = gastosMostrados ? "block" : "none";
+    cortas.style.display = ventasMostradas ? "none" : "table-row-group";
+    todas.style.display = ventasMostradas ? "table-row-group" : "none";
+    filtro.style.display = ventasMostradas ? "block" : "none";
 
-        btn.innerText = gastosMostrados ? "Ver menos" : "Ver todos";
-    };
+    btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
+
+    if (ventasMostradas) {
+        info.innerText = "Mostrando todas";
+    } else {
+        info.innerText = `Mostrando ${cortas.children.length} de ${cortas.children.length + todas.children.length}`;
+    }
+};
 
     // 🔍 FILTRAR VENTAS
     window.filtrarVentas = function () {
