@@ -269,7 +269,6 @@ def enviar():
     mensaje_codificado = urllib.parse.quote(mensaje)
     return redirect(f"https://wa.me/5493564593629?text={mensaje_codificado}")
 
-# 📊 DASHBOARD
 @app.route("/dashboard")
 def dashboard():
     if "usuario" not in session:
@@ -279,57 +278,58 @@ def dashboard():
     cursor = conn.cursor()
 
     # 🔥 Totales
-    cursor.execute("""
-SELECT IFNULL(SUM(total),0) 
-FROM ventas 
-WHERE eliminado = 0
-""")
+    cursor.execute("SELECT IFNULL(SUM(total),0) FROM ventas WHERE eliminado = 0")
     ventas_total = cursor.fetchone()[0]
 
-    cursor.execute("""
-SELECT IFNULL(SUM(monto),0) 
-FROM gastos 
-WHERE eliminado = 0
-""")
+    cursor.execute("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE eliminado = 0")
     gastos_total = cursor.fetchone()[0]
 
     ganancia = ventas_total - gastos_total
 
-    # 🔥 VENTAS (con nombre de producto)
+    # 🔥 VENTAS
     cursor.execute("""
-SELECT v.*, p.nombre 
-FROM ventas v
-JOIN productos p ON v.producto_id = p.id
-WHERE v.eliminado = 0
-ORDER BY v.fecha DESC
-""")
-    ventas = cursor.fetchall()
+        SELECT v.*, p.nombre
+        FROM ventas v
+        JOIN productos p ON v.producto_id = p.id
+        WHERE v.eliminado = 0
+        ORDER BY v.fecha DESC
+    """)
+    ventas_todas = cursor.fetchall()
+
+    ventas_ultimas = ventas_todas[:3]  # 👈 SOLO 3
 
     # 🔥 GASTOS
     cursor.execute("""
-SELECT * FROM gastos
-WHERE eliminado = 0
-ORDER BY fecha DESC
-""")
-    gastos = cursor.fetchall()
+        SELECT *
+        FROM gastos
+        WHERE eliminado = 0
+        ORDER BY fecha DESC
+    """)
+    gastos_todos = cursor.fetchall()
 
-    cursor.execute("""
-SELECT * FROM productos
-""")
+    gastos_ultimos = gastos_todos[:3]  # 👈 SOLO 3
+
+    # 🔥 PRODUCTOS
+    cursor.execute("SELECT * FROM productos")
     productos = cursor.fetchall()
+
+    conn.close()
+
+    ventas_total_cantidad = len(ventas_todas)
+    gastos_total_cantidad = len(gastos_todos)
 
     return render_template(
     "ventas.html",
-    ventas=ventas,
-    gastos=gastos,
+    ventas_ultimas=ventas_ultimas,
+    ventas_todas=ventas_todas,
+    gastos_ultimos=gastos_ultimos,
+    gastos_todos=gastos_todos,
     productos=productos,
     ventas_total=ventas_total,
     gastos_total=gastos_total,
     ganancia=ganancia,
-    ventas_ultimas=ventas[:5],
-    ventas_todas=ventas,
-    gastos_ultimos=gastos[:5],
-    gastos_todos=gastos,
+    ventas_total_cantidad=ventas_total_cantidad,
+    gastos_total_cantidad=gastos_total_cantidad
 )
 
 @app.route("/eliminar_venta/<int:id>", methods=["POST"])
