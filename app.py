@@ -113,7 +113,7 @@ def cargar_productos_base():
 
     # 🔥 VERIFICAR SI YA HAY PRODUCTOS
     cursor.execute("SELECT COUNT(*) FROM productos")
-    cantidad = cursor.fetchone()["count"]
+    cantidad = cursor.fetchone()[0]
 
     if cantidad > 0:
         conn.close()
@@ -301,10 +301,10 @@ def dashboard():
 
     # 🔥 Totales
     cursor.execute("SELECT COALESCE(SUM(total),0) FROM ventas WHERE eliminado = 0")
-    ventas_total = cursor.fetchone()["count"]
+    ventas_total = cursor.fetchone()[0]
 
     cursor.execute("SELECT COALESCE(SUM(monto),0) FROM gastos WHERE eliminado = 0")
-    gastos_total = cursor.fetchone()["count"]
+    gastos_total = cursor.fetchone()[0]
 
     ganancia = ventas_total - gastos_total
 
@@ -466,7 +466,7 @@ def agregar_venta():
 
     cursor.execute("""
         INSERT INTO ventas (fecha, producto_id, cantidad, total, metodo_pago)
-        VALUES NOW(), %s, %s, %s, %s)
+        VALUES (NOW(), %s, %s, %s, %s)
     """, (producto_id, cantidad, total, metodo_pago))
 
     cursor.execute("""
@@ -618,7 +618,7 @@ def exportar_excel():
     cursor.execute("""
         SELECT descripcion, monto
         FROM gastos
-        WHERE DATE(fecha) = ?
+        WHERE DATE(fecha) = %s
     """, (hoy,))
     gastos = cursor.fetchall()
 
@@ -635,7 +635,7 @@ def exportar_excel():
     ws["A1"] = f"Resumen del día {hoy}"
     ws["A1"].font = Font(size=14, bold=True)
 
-    total_ventas = sum(v[2] for v in ventas)
+    total_ventas = sum(v["sum"] for v in ventas)
     total_gastos = sum(g[1] for g in gastos)
     ganancia = total_ventas - total_gastos
 
