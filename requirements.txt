@@ -1,5 +1,5 @@
 Flask
 pandas
 openpyxl
-pyodbc
 gunicorn
+psycopg2-binary

@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, send_file
 from werkzeug.security import generate_password_hash
-import sqlite3
 import pandas as pd
 import io
 import urllib.parse
@@ -9,57 +8,80 @@ from openpyxl import Workbook
 from flask import send_file
 import io
 from datetime import datetime
+import psycopg2
+import psycopg2.extras
+import os
+from dotenv import load_dotenv
 
+load_dotenv()  # 👈 ESTA ES LA CLAVE
+
+print(os.environ.get("DATABASE_URL"))
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta"
 
 
-# 🔌 CONEXIÓN SQLITE
+#CONEXION
 def conectar():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    url = os.environ.get("DATABASE_URL")
+
+    if not url:
+        raise Exception("❌ DATABASE_URL no está configurada")
+
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+
+    return psycopg2.connect(
+        url,
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
 # 🧱 CREAR TABLAS
 def crear_tablas():
     conn = conectar()
     cursor = conn.cursor()
 
+    # 👤 USUARIOS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT,
-        contraseña TEXT
+        id SERIAL PRIMARY KEY,
+        usuario TEXT UNIQUE,
+        password TEXT
     )
     """)
 
+    # 📦 PRODUCTOS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS productos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         nombre TEXT,
         stock_inicial INTEGER,
         stock_actual INTEGER,
-        precio REAL
+        precio NUMERIC
     )
     """)
 
+    # 💰 VENTAS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS ventas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
+        fecha TIMESTAMP,
         producto_id INTEGER,
         cantidad INTEGER,
-        total REAL,
-        fecha TEXT
+        total NUMERIC,
+        metodo_pago TEXT,
+        eliminado INTEGER DEFAULT 0
     )
     """)
 
+    # 💸 GASTOS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS gastos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
+        fecha TIMESTAMP,
         descripcion TEXT,
-        monto REAL,
-        fecha TEXT
+        monto NUMERIC,
+        eliminado INTEGER DEFAULT 0
     )
     """)
 
@@ -75,10 +97,10 @@ def crear_usuario():
     password = generate_password_hash("Familia26@")
 
     for u in usuarios:
-        cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (u,))
+        cursor.execute("SELECT * FROM usuarios WHERE usuario = %s", (u,))
         if not cursor.fetchone():
             cursor.execute(
-                "INSERT INTO usuarios (usuario, contraseña) VALUES (?, ?)",
+                "INSERT INTO usuarios (usuario, password) VALUES (%s, %s)",
                 (u, password)
             )
 
@@ -91,7 +113,7 @@ def cargar_productos_base():
 
     # 🔥 VERIFICAR SI YA HAY PRODUCTOS
     cursor.execute("SELECT COUNT(*) FROM productos")
-    cantidad = cursor.fetchone()[0]
+    cantidad = cursor.fetchone()["count"]
 
     if cantidad > 0:
         conn.close()
@@ -107,7 +129,7 @@ def cargar_productos_base():
     for nombre, precio in productos:
         cursor.execute("""
             INSERT INTO productos (nombre, stock_inicial, stock_actual, precio)
-            VALUES (?, 450, 450, ?)
+            VALUES (%s, 450, 450, %s)
         """, (nombre, precio))
 
     conn.commit()
@@ -155,8 +177,8 @@ def actualizar_stock_diario():
             cursor.execute("""
                 UPDATE productos
                 SET stock_inicial = stock_actual,
-                    fecha_stock = ?
-                WHERE id = ?
+                    fecha_stock = %s
+                WHERE id = %s
             """, (hoy, p["id"]))
 
     conn.commit()
@@ -175,10 +197,10 @@ def login():
         conn = conectar()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM usuarios WHERE usuario = ?", (usuario,))
+        cursor.execute("SELECT * FROM usuarios WHERE usuario = %s", (usuario,))
         user = cursor.fetchone()
 
-        if user and check_password_hash(user["contraseña"], password):
+        if user and check_password_hash(user["password"], password):
             session["usuario"] = usuario
             return redirect("/dashboard")
 
@@ -278,11 +300,11 @@ def dashboard():
     cursor = conn.cursor()
 
     # 🔥 Totales
-    cursor.execute("SELECT IFNULL(SUM(total),0) FROM ventas WHERE eliminado = 0")
-    ventas_total = cursor.fetchone()[0]
+    cursor.execute("SELECT COALESCE(SUM(total),0) FROM ventas WHERE eliminado = 0")
+    ventas_total = cursor.fetchone()["count"]
 
-    cursor.execute("SELECT IFNULL(SUM(monto),0) FROM gastos WHERE eliminado = 0")
-    gastos_total = cursor.fetchone()[0]
+    cursor.execute("SELECT COALESCE(SUM(monto),0) FROM gastos WHERE eliminado = 0")
+    gastos_total = cursor.fetchone()["count"]
 
     ganancia = ventas_total - gastos_total
 
@@ -337,7 +359,7 @@ def eliminar_venta(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE ventas SET eliminado = 1 WHERE id = ?", (id,))
+    cursor.execute("UPDATE ventas SET eliminado = 1 WHERE id = %s", (id,))
     
     conn.commit()
     conn.close()
@@ -349,7 +371,7 @@ def eliminar_gasto(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("UPDATE gastos SET eliminado = 1 WHERE id = ?", (id,))
+    cursor.execute("UPDATE gastos SET eliminado = 1 WHERE id = %s", (id,))
     
     conn.commit()
     conn.close()
@@ -393,10 +415,10 @@ def restaurar_historial(id):
     cursor = conn.cursor()
 
     # intenta restaurar en ventas
-    cursor.execute("UPDATE ventas SET eliminado = 0 WHERE id = ?", (id,))
+    cursor.execute("UPDATE ventas SET eliminado = 0 WHERE id = %s", (id,))
     
     # intenta restaurar en gastos
-    cursor.execute("UPDATE gastos SET eliminado = 0 WHERE id = ?", (id,))
+    cursor.execute("UPDATE gastos SET eliminado = 0 WHERE id = %s", (id,))
 
     conn.commit()
     conn.close()
@@ -409,10 +431,10 @@ def eliminar_historial(id):
     cursor = conn.cursor()
 
     # borrar de ventas si existe
-    cursor.execute("DELETE FROM ventas WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM ventas WHERE id = %s", (id,))
     
     # borrar de gastos si existe
-    cursor.execute("DELETE FROM gastos WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM gastos WHERE id = %s", (id,))
 
     conn.commit()
     conn.close()
@@ -429,7 +451,7 @@ def agregar_venta():
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT precio, stock_actual FROM productos WHERE id = ?", (producto_id,))
+    cursor.execute("SELECT precio, stock_actual FROM productos WHERE id = %s", (producto_id,))
     producto = cursor.fetchone()
 
     if not producto:
@@ -444,12 +466,12 @@ def agregar_venta():
 
     cursor.execute("""
         INSERT INTO ventas (fecha, producto_id, cantidad, total, metodo_pago)
-        VALUES (datetime('now'), ?, ?, ?, ?)
+        VALUES NOW(), %s, %s, %s, %s)
     """, (producto_id, cantidad, total, metodo_pago))
 
     cursor.execute("""
-        UPDATE productos SET stock_actual = stock_actual - ?
-        WHERE id = ?
+        UPDATE productos SET stock_actual = stock_actual - %s
+        WHERE id = %s
     """, (cantidad, producto_id))
 
     conn.commit()
@@ -468,7 +490,7 @@ def agregar_gasto():
 
     cursor.execute("""
         INSERT INTO gastos (descripcion, monto, fecha)
-        VALUES (?, ?, datetime('now'))
+        VALUES (%s, %s, NOW())
     """, (descripcion, monto))
 
     conn.commit()
@@ -486,13 +508,13 @@ def agregar_producto():
     stock = int(request.form["stock"])
 
     # evitar duplicados
-    cursor.execute("SELECT * FROM productos WHERE nombre = ?", (nombre,))
+    cursor.execute("SELECT * FROM productos WHERE nombre = %s", (nombre,))
     existe = cursor.fetchone()
 
     if not existe:
         cursor.execute("""
             INSERT INTO productos (nombre, stock_inicial, stock_actual, precio)
-            VALUES (?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s)
         """, (nombre, stock, stock, precio))
 
     conn.commit()
@@ -510,8 +532,8 @@ def actualizar_stock(id):
 
     cursor.execute("""
         UPDATE productos
-        SET stock_actual = ?, precio = ?
-        WHERE id = ?
+        SET stock_actual = %s, precio = %s
+        WHERE id = %s
     """, (stock, precio, id))
 
     conn.commit()
@@ -524,7 +546,7 @@ def eliminar_producto(id):
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM productos WHERE id = ?", (id,))
+    cursor.execute("DELETE FROM productos WHERE id = %s", (id,))
 
     conn.commit()
     conn.close()
@@ -535,20 +557,20 @@ def arreglar_tabla_productos():
     conn = conectar()
     cursor = conn.cursor()
 
-    try:
-        cursor.execute("ALTER TABLE productos ADD COLUMN fecha_stock TEXT")
-    except:
-        pass
+    cursor.execute("""
+    ALTER TABLE productos
+    ADD COLUMN IF NOT EXISTS fecha_stock TEXT
+    """)
 
-    try:
-        cursor.execute("ALTER TABLE productos ADD COLUMN stock_inicial INTEGER DEFAULT 0")
-    except:
-        pass
+    cursor.execute("""
+    ALTER TABLE productos
+    ADD COLUMN IF NOT EXISTS stock_inicial INTEGER DEFAULT 0
+    """)
 
-    try:
-        cursor.execute("ALTER TABLE productos ADD COLUMN stock_actual INTEGER DEFAULT 0")
-    except:
-        pass
+    cursor.execute("""
+    ALTER TABLE productos
+    ADD COLUMN IF NOT EXISTS stock_actual INTEGER DEFAULT 0
+    """)
 
     conn.commit()
     conn.close()
@@ -587,7 +609,7 @@ def exportar_excel():
         SELECT p.nombre, SUM(v.cantidad), SUM(v.total)
         FROM ventas v
         JOIN productos p ON v.producto_id = p.id
-        WHERE DATE(v.fecha) = ?
+        WHERE DATE(v.fecha) = %s
         GROUP BY p.nombre
     """, (hoy,))
     ventas = cursor.fetchall()
@@ -719,32 +741,6 @@ def exportar_excel():
         download_name=f"reporte_{hoy}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-def arreglar_db():
-    conn = conectar()
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("ALTER TABLE ventas ADD COLUMN metodo_pago TEXT")
-    except:
-        pass
-    try:
-     cursor.execute("ALTER TABLE ventas ADD COLUMN eliminado INTEGER DEFAULT 0")
-    except:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE gastos ADD COLUMN eliminado INTEGER DEFAULT 0")
-    except:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE ventas ADD COLUMN eliminado INTEGER DEFAULT 0")
-    except:
-        pass
-
-    conn.commit()
-    conn.close()
 
 # 🚀 INIT
 crear_tablas()
