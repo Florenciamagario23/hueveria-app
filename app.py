@@ -558,18 +558,18 @@ def arreglar_tabla_productos():
     cursor = conn.cursor()
 
     cursor.execute("""
-    ALTER TABLE productos
-    ADD COLUMN IF NOT EXISTS fecha_stock TEXT
+        ALTER TABLE productos 
+        ADD COLUMN IF NOT EXISTS fecha_stock TEXT
     """)
 
     cursor.execute("""
-    ALTER TABLE productos
-    ADD COLUMN IF NOT EXISTS stock_inicial INTEGER DEFAULT 0
+        ALTER TABLE productos 
+        ADD COLUMN IF NOT EXISTS stock_inicial INTEGER DEFAULT 0
     """)
 
     cursor.execute("""
-    ALTER TABLE productos
-    ADD COLUMN IF NOT EXISTS stock_actual INTEGER DEFAULT 0
+        ALTER TABLE productos 
+        ADD COLUMN IF NOT EXISTS stock_actual INTEGER DEFAULT 0
     """)
 
     conn.commit()
@@ -744,10 +744,10 @@ def exportar_excel():
 
 # 🚀 INIT
 crear_tablas()
-arreglar_tabla_productos()   # 👈 PRIMERO
+arreglar_tabla_productos()  # 👈 SIEMPRE antes de usar productos
 crear_usuario()
 arreglar_db()
-cargar_productos_base()      # 👈 DESPUÉS
+cargar_productos_base()
 actualizar_stock_diario()
 
 
