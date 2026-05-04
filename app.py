@@ -12,10 +12,10 @@ import psycopg2
 import psycopg2.extras
 import os
 from dotenv import load_dotenv
+load_dotenv()
 
-load_dotenv()  # 👈 ESTA ES LA CLAVE
 
-print(os.environ.get("DATABASE_URL"))
+url = os.environ.get("DATABASE_URL")
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta"
@@ -112,8 +112,8 @@ def cargar_productos_base():
     cursor = conn.cursor()
 
     # 🔥 VERIFICAR SI YA HAY PRODUCTOS
-    cursor.execute("SELECT COUNT(*) FROM productos")
-    cantidad = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) AS total FROM productos")
+    cantidad = cursor.fetchone()["total"]
 
     if cantidad > 0:
         conn.close()
@@ -301,10 +301,14 @@ def dashboard():
 
     # 🔥 Totales
     cursor.execute("SELECT COALESCE(SUM(total),0) FROM ventas WHERE eliminado = 0")
-    ventas_total = cursor.fetchone()[0]
+    ventas_total = list(cursor.fetchone().values())[0]
 
-    cursor.execute("SELECT COALESCE(SUM(monto),0) FROM gastos WHERE eliminado = 0")
-    gastos_total = cursor.fetchone()[0]
+    cursor.execute("""
+SELECT COALESCE(SUM(monto),0) AS total
+FROM gastos
+WHERE eliminado = 0
+""")
+    gastos_total = cursor.fetchone()["total"]
 
     ganancia = ventas_total - gastos_total
 
@@ -445,19 +449,28 @@ def eliminar_historial(id):
 @app.route("/agregar_venta", methods=["POST"])
 def agregar_venta():
     producto_id = int(request.form["producto_id"])
-    cantidad = int(request.form["cantidad"])
-    metodo_pago = request.form["metodo_pago"]  # 👈 AGREGAR
+
+    try:
+        cantidad = int(request.form["cantidad"])
+    except:
+        cantidad = 0
+
+    metodo_pago = request.form["metodo_pago"]
 
     conn = conectar()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT precio, stock_actual FROM productos WHERE id = %s", (producto_id,))
+    cursor.execute(
+        "SELECT precio, stock_actual FROM productos WHERE id = %s",
+        (producto_id,)
+    )
     producto = cursor.fetchone()
 
     if not producto:
         return "Producto no encontrado"
 
-    precio, stock = producto
+    precio = producto["precio"]
+    stock = producto["stock_actual"]
 
     if cantidad > stock:
         return "Sin stock"
@@ -470,7 +483,8 @@ def agregar_venta():
     """, (producto_id, cantidad, total, metodo_pago))
 
     cursor.execute("""
-        UPDATE productos SET stock_actual = stock_actual - %s
+        UPDATE productos
+        SET stock_actual = stock_actual - %s
         WHERE id = %s
     """, (cantidad, producto_id))
 
