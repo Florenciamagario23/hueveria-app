@@ -620,12 +620,17 @@ def exportar_excel():
 
     # 📊 VENTAS
     cursor.execute("""
-        SELECT p.nombre, SUM(v.cantidad), SUM(v.total)
-        FROM ventas v
-        JOIN productos p ON v.producto_id = p.id
-        WHERE DATE(v.fecha) = %s
-        GROUP BY p.nombre
-    """, (hoy,))
+    SELECT 
+        v.fecha,
+        p.nombre,
+        v.cantidad,
+        v.total,
+        v.metodo_pago
+    FROM ventas v
+    JOIN productos p ON v.producto_id = p.id
+    WHERE v.eliminado = 0
+    ORDER BY v.fecha DESC
+""")
     ventas = cursor.fetchall()
 
     # 💸 GASTOS
@@ -649,8 +654,8 @@ def exportar_excel():
     ws["A1"] = f"Resumen del día {hoy}"
     ws["A1"].font = Font(size=14, bold=True)
 
-    total_ventas = sum(v["sum"] for v in ventas)
-    total_gastos = sum(g[1] for g in gastos)
+    total_ventas = sum(v["total"] for v in ventas)
+    total_gastos = sum(g["monto"] for g in gastos)
     ganancia = total_ventas - total_gastos
 
     ws["A3"] = "Ventas"
@@ -676,10 +681,16 @@ def exportar_excel():
     # =============================
     ws_ventas = wb.create_sheet("Ventas")
 
-    ws_ventas.append(["Producto", "Cantidad", "Total"])
+    ws_ventas.append(["Fecha", "Producto", "Cantidad", "Total", "Pago"])
 
     for v in ventas:
-        ws_ventas.append(list(v))
+     ws_ventas.append([
+        v["fecha"],
+        v["nombre"],
+        v["cantidad"],
+        v["total"],
+        v["metodo_pago"]
+    ])
 
     # Estilo encabezado
     header_fill = PatternFill(start_color="333333", fill_type="solid")
@@ -704,7 +715,7 @@ def exportar_excel():
     ws_gastos.append(["Descripción", "Monto"])
 
     for g in gastos:
-        ws_gastos.append(list(g))
+        ws_gastos.append([g["descripcion"], g["monto"]])
 
     for cell in ws_gastos[1]:
         cell.font = Font(bold=True, color="FFFFFF")
@@ -725,7 +736,7 @@ def exportar_excel():
     ws_chart.append(["Producto", "Total"])
 
     for v in ventas:
-        ws_chart.append([v[0], v[2]])
+        ws_chart.append([v["nombre"], v["total"]])
 
     chart = BarChart()
     chart.title = "Ventas por producto"
