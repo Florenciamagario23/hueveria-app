@@ -477,7 +477,10 @@ def agregar_venta():
 
     total = precio * cantidad
 
-    fecha = request.form["fecha"]
+    fecha = request.form.get("fecha")
+
+    if not fecha:
+     fecha = datetime.now()
 
     cursor.execute("""
     INSERT INTO ventas (fecha, producto_id, cantidad, total, metodo_pago)
