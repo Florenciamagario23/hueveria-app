@@ -106,6 +106,11 @@
 <input type="number" name="cantidad" class="form-control" required>
 </div>
 
+<div class="mb-2">
+<label>Fecha y hora:</label>
+<input type="datetime-local" name="fecha" class="form-control" required>
+</div>
+
 <br>
 <button type="submit" class="btn btn-success">Guardar venta</button>
 
@@ -152,7 +157,7 @@
 <tbody id="ventas-cortas">
 {% for v in ventas_ultimas %}
 <tr>
-  <td>{{ v.fecha }}</td>
+  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
   <td>{{ v.nombre }}</td>
   <td>{{ v.cantidad }}</td>
   <td>${{ v.total }}</td>
@@ -172,7 +177,7 @@
 <tbody id="ventas-todas" style="display:none;">
 {% for v in ventas_todas %}
 <tr>
-  <td>{{ v.fecha }}</td>
+  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
   <td>{{ v.nombre }}</td>
   <td>{{ v.cantidad }}</td>
   <td>${{ v.total }}</td>
