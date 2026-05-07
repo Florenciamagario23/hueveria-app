@@ -157,7 +157,7 @@
 <tbody id="ventas-cortas">
 {% for v in ventas_ultimas %}
 <tr>
-  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+  <td>{{ (v.fecha - timedelta(hours=3)).strftime('%d/%m/%Y %H:%M:%S') }}</td>
   <td>{{ v.nombre }}</td>
   <td>{{ v.cantidad }}</td>
   <td>${{ v.total }}</td>
@@ -177,7 +177,7 @@
 <tbody id="ventas-todas" style="display:none;">
 {% for v in ventas_todas %}
 <tr>
-  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+  <td>{{ (v.fecha - timedelta(hours=3)).strftime('%d/%m/%Y %H:%M:%S') }}</td>
   <td>{{ v.nombre }}</td>
   <td>{{ v.cantidad }}</td>
   <td>${{ v.total }}</td>
