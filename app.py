@@ -321,6 +321,9 @@ WHERE eliminado = 0
         ORDER BY v.fecha DESC
     """)
     ventas_todas = cursor.fetchall()
+    
+    for v in ventas_todas:
+     v["fecha"] = v["fecha"] - timedelta(hours=3)
 
     ventas_ultimas = ventas_todas[:3]  # 👈 SOLO 3
 
