@@ -299,18 +299,64 @@ def dashboard():
     conn = conectar()
     cursor = conn.cursor()
 
-    # 🔥 Totales
-    cursor.execute("SELECT COALESCE(SUM(total),0) FROM ventas WHERE eliminado = 0")
-    ventas_total = list(cursor.fetchone().values())[0]
+   # 📅 HOY
+    cursor.execute("""
+SELECT COALESCE(SUM(total),0) AS total
+FROM ventas
+WHERE eliminado = 0
+AND DATE(fecha) = CURRENT_DATE
+""")
+    ventas_hoy = cursor.fetchone()["total"]
 
     cursor.execute("""
 SELECT COALESCE(SUM(monto),0) AS total
 FROM gastos
 WHERE eliminado = 0
+AND DATE(fecha) = CURRENT_DATE
 """)
-    gastos_total = cursor.fetchone()["total"]
+    gastos_hoy = cursor.fetchone()["total"]
 
-    ganancia = ventas_total - gastos_total
+    ganancia_hoy = ventas_hoy - gastos_hoy
+
+
+# 📆 SEMANA
+    cursor.execute("""
+SELECT COALESCE(SUM(total),0) AS total
+FROM ventas
+WHERE eliminado = 0
+AND fecha >= CURRENT_DATE - INTERVAL '7 days'
+""")
+    ventas_semana = cursor.fetchone()["total"]
+
+    cursor.execute("""
+SELECT COALESCE(SUM(monto),0) AS total
+FROM gastos
+WHERE eliminado = 0
+AND fecha >= CURRENT_DATE - INTERVAL '7 days'
+""")
+    gastos_semana = cursor.fetchone()["total"]
+
+    ganancia_semana = ventas_semana - gastos_semana
+
+
+# 🗓 MES
+    cursor.execute("""
+SELECT COALESCE(SUM(total),0) AS total
+FROM ventas
+WHERE eliminado = 0
+AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
+""")
+    ventas_mes = cursor.fetchone()["total"]
+
+    cursor.execute("""
+SELECT COALESCE(SUM(monto),0) AS total
+FROM gastos
+WHERE eliminado = 0
+AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE)
+""")
+    gastos_mes = cursor.fetchone()["total"]
+
+    ganancia_mes = ventas_mes - gastos_mes
 
     # 🔥 VENTAS
     cursor.execute("""
@@ -321,7 +367,7 @@ WHERE eliminado = 0
         ORDER BY v.fecha DESC
     """)
     ventas_todas = cursor.fetchall()
-    
+
     for v in ventas_todas:
      v["fecha"] = v["fecha"] - timedelta(hours=3)
 
@@ -354,9 +400,15 @@ WHERE eliminado = 0
     gastos_ultimos=gastos_ultimos,
     gastos_todos=gastos_todos,
     productos=productos,
-    ventas_total=ventas_total,
-    gastos_total=gastos_total,
-    ganancia=ganancia,
+    ventas_hoy=ventas_hoy,
+    gastos_hoy=gastos_hoy,
+    ganancia_hoy=ganancia_hoy,
+    ventas_semana=ventas_semana,
+    gastos_semana=gastos_semana,
+    ganancia_semana=ganancia_semana,
+    ventas_mes=ventas_mes,
+    gastos_mes=gastos_mes,
+    ganancia_mes=ganancia_mes,
     ventas_total_cantidad=ventas_total_cantidad,
     gastos_total_cantidad=gastos_total_cantidad
 )
