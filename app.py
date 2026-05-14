@@ -701,7 +701,6 @@ def exportar_excel():
     """, (hoy,))
     gastos = cursor.fetchall()
 
-    conn.close()
 
     wb = Workbook()
 
@@ -711,28 +710,120 @@ def exportar_excel():
     ws = wb.active
     ws.title = "Resumen"
 
-    ws["A1"] = f"Resumen del día {hoy}"
-    ws["A1"].font = Font(size=14, bold=True)
+    from datetime import timedelta
 
-    total_ventas = sum(v["total"] for v in ventas)
-    total_gastos = sum(g["monto"] for g in gastos)
-    ganancia = total_ventas - total_gastos
+    hoy_date = datetime.now().date()
+    inicio_semana = hoy_date - timedelta(days=hoy_date.weekday())
+    inicio_mes = hoy_date.replace(day=1)
 
-    ws["A3"] = "Ventas"
-    ws["B3"] = total_ventas
-    ws["A4"] = "Gastos"
-    ws["B4"] = total_gastos
-    ws["A5"] = "Ganancia"
-    ws["B5"] = ganancia
+     # =============================
+     # HOY
+     # =============================
+    ventas_hoy = sum(
+    v["total"]
+    for v in ventas
+    if v["fecha"].date() == hoy_date
+)
 
-    # Colores
-    ws["B3"].fill = PatternFill(start_color="C6EFCE", fill_type="solid")
-    ws["B4"].fill = PatternFill(start_color="FFC7CE", fill_type="solid")
-    ws["B5"].fill = PatternFill(start_color="BDD7EE", fill_type="solid")
+    cursor = conn.cursor()
 
-    # Formato $
-    for c in ["B3", "B4", "B5"]:
-        ws[c].number_format = '"$"#,##0'
+    cursor.execute("""
+    SELECT COALESCE(SUM(monto),0) as total
+    FROM gastos
+    WHERE DATE(fecha) = %s
+""", (hoy_date,))
+
+    gastos_hoy = cursor.fetchone()["total"] or 0
+
+    ganancia_hoy = ventas_hoy - gastos_hoy
+
+    # =============================
+    # SEMANA
+    # =============================
+    ventas_semana = sum(
+    v["total"]
+     for v in ventas
+     if v["fecha"].date() >= inicio_semana
+)
+
+    cursor.execute("""
+    SELECT COALESCE(SUM(monto),0) as total
+    FROM gastos
+    WHERE DATE(fecha) >= %s
+""", (inicio_semana,))
+
+    gastos_semana = cursor.fetchone()["total"] or 0
+
+    ganancia_semana = ventas_semana - gastos_semana
+
+    # =============================
+    # MES
+    # =============================
+    ventas_mes = sum(
+    v["total"]
+    for v in ventas
+    if v["fecha"].date() >= inicio_mes
+)
+
+    cursor.execute("""
+    SELECT COALESCE(SUM(monto),0) as total
+    FROM gastos
+    WHERE DATE(fecha) >= %s
+""", (inicio_mes,))
+
+    gastos_mes = cursor.fetchone()["total"] or 0
+
+    ganancia_mes = ventas_mes - gastos_mes
+
+    # =============================
+    # TITULO
+    # =============================
+    ws["A1"] = "📊 RESUMEN GENERAL"
+    ws["A1"].font = Font(size=18, bold=True)
+
+    # ENCABEZADOS
+    ws["A3"] = "Periodo"
+    ws["B3"] = "Ventas"
+    ws["C3"] = "Gastos"
+    ws["D3"] = "Ganancia"
+
+    header_fill = PatternFill(start_color="333333", fill_type="solid")
+
+    for cell in ["A3", "B3", "C3", "D3"]:
+     ws[cell].font = Font(bold=True, color="FFFFFF")
+    ws[cell].fill = header_fill
+    ws[cell].alignment = Alignment(horizontal="center")
+ 
+    # FILAS
+    ws["A4"] = "Hoy"
+    ws["B4"] = ventas_hoy
+    ws["C4"] = gastos_hoy
+    ws["D4"] = ganancia_hoy
+
+    ws["A5"] = "Semana"
+    ws["B5"] = ventas_semana
+    ws["C5"] = gastos_semana
+    ws["D5"] = ganancia_semana
+
+    ws["A6"] = "Mes"
+    ws["B6"] = ventas_mes
+    ws["C6"] = gastos_mes
+    ws["D6"] = ganancia_mes
+
+    # FORMATO $
+    for fila in range(4, 7):
+     for col in ["B", "C", "D"]:
+        ws[f"{col}{fila}"].number_format = '"$"#,##0'
+
+    # COLORES
+    for cell in ["B4", "B5", "B6"]:
+     ws[cell].fill = PatternFill(start_color="C6EFCE", fill_type="solid")
+
+    for cell in ["C4", "C5", "C6"]:
+     ws[cell].fill = PatternFill(start_color="FFC7CE", fill_type="solid")
+
+    for cell in ["D4", "D5", "D6"]:
+     ws[cell].fill = PatternFill(start_color="BDD7EE", fill_type="solid")
 
     ajustar_columnas(ws)
 
@@ -819,6 +910,8 @@ def exportar_excel():
     archivo = io.BytesIO()
     wb.save(archivo)
     archivo.seek(0)
+
+    conn.close()
 
     return send_file(
         archivo,

@@ -15,6 +15,7 @@
 body{
     background: #f4f4f4;
     font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
 }
 
 html{
@@ -53,7 +54,7 @@ html{
 
 /* MENÚ */
 .menu-premium{
-    background: white;
+    background: rgba(255,255,255,0.96);
     display: flex;
     justify-content: center;
     gap: 50px;
@@ -63,6 +64,8 @@ html{
     position: sticky;
     top: 0;
     z-index: 9999;
+
+    backdrop-filter: blur(10px);
 
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
@@ -110,7 +113,7 @@ html{
     text-align: center;
 }
 
-/* PRODUCTOS PREMIUM */
+/* PRODUCTOS */
 .producto-card{
     background: white;
     text-align: center;
@@ -141,7 +144,6 @@ html{
     flex-grow: 1;
 }
 
-/* TÍTULO */
 .producto-titulo{
     font-size: 20px;
     font-weight: 500;
@@ -155,7 +157,6 @@ html{
     margin-bottom: 15px;
 }
 
-/* PRECIO */
 .producto-precio{
     margin-bottom: 20px;
 }
@@ -181,6 +182,49 @@ html{
     background: #333;
 }
 
+/* NOSOTROS */
+.nosotros-section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+
+    padding: 80px 10%;
+}
+
+.nosotros-texto{
+    flex: 1;
+}
+
+.nosotros-texto h2{
+    font-size: 42px;
+    margin-bottom: 20px;
+}
+
+.nosotros-texto p{
+    font-size: 18px;
+    line-height: 1.8;
+    color: #444;
+}
+
+.nosotros-img{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.nosotros-img img{
+    width: 100%;
+    max-width:380px;
+    height: auto;
+
+    border-radius: 20px;
+
+    object-fit: cover;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
 /* FOOTER */
 footer{
     background: #111;
@@ -190,7 +234,7 @@ footer{
     margin-top: 80px;
 }
 
-/* BOTONES REDES */
+/* REDES */
 .social-btn{
     width: 40px;
     height: 40px;
@@ -251,61 +295,63 @@ footer{
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
-.horarios-box h5,
-.horarios-box h6{
-    margin-bottom: 5px;
-}
-
 /* RESPONSIVE */
 @media (max-width: 768px){
 
     .logo-text{
         font-size: 24px;
         letter-spacing: 2px;
+        text-align: center;
     }
 
     .menu-premium{
-        gap: 15px;
+        gap: 12px;
         flex-wrap: wrap;
-        padding: 12px;
+        padding: 12px 5px;
     }
 
     .menu-premium a{
-        font-size: 12px;
+        font-size: 11px;
+        letter-spacing: 1px;
     }
 
     .slider-img{
-        height: 350px;
-    }
-
-    .carousel-caption{
-        bottom: 10%;
+        height: 300px;
     }
 
     .carousel-caption h1{
-        font-size: 24px;
+        font-size: 28px;
+        padding: 0 15px;
+        line-height: 1.3;
     }
 
     .producto-img{
-        height: 250px;
+        height: 240px;
+    }
+
+    .producto-titulo{
+        font-size: 16px;
     }
 
     .precio-actual{
         font-size: 28px;
     }
 
-    .producto-titulo{
-        font-size: 16px;
-        min-height: auto;
-    }
-
-    .horarios-box{
-        width: 200px;
+    .btn-carrito{
+        padding: 10px;
         font-size: 12px;
     }
 
-    #buscador{
-        width: 140px;
+    .horarios-box{
+        width: 180px;
+        font-size: 11px;
+        bottom: 80px;
+        right: 10px;
+    }
+
+    .nosotros-section{
+        flex-direction: column;
+        text-align: center;
     }
 
 }
@@ -354,6 +400,7 @@ footer{
   <a href="#productos">PRODUCTOS</a>
   <a href="#mayoristas">MAYORISTAS</a>
   <a href="#pagos">MEDIOS DE PAGO</a>
+  <a href="#nosotros">NOSOTROS</a>
   <a href="#contacto">CONTACTO</a>
 
 </div>
@@ -767,6 +814,42 @@ footer{
         Podés pagar de forma segura mediante
         Mercado Pago o QR.
         </p>
+
+    </div>
+
+</section>
+
+<section id="nosotros" class="nosotros-section">
+
+    <div class="nosotros-texto">
+
+        <h2>Nosotros</h2>
+
+        <p>
+            Detrás de Huevería Los Primos estamos Micaela y Magali,
+            dos emprendedoras comprometidas con ofrecer productos frescos,
+            de calidad y una atención cercana y responsable a cada cliente.
+
+            Nuestro emprendimiento nació con el objetivo de brindar un
+            servicio confiable, combinando dedicación, organización y
+            compromiso en cada pedido.
+
+            Creemos que el crecimiento se construye a través del trabajo
+            diario, la confianza de nuestros clientes y la mejora constante.
+
+            En Huevería Los Primos trabajamos para garantizar frescura,
+            buena atención y una experiencia simple y cómoda para quienes
+            nos eligen.
+
+            🥚✨
+        </p>
+
+    </div>
+
+    <div class="nosotros-img">
+
+        <img src="{{ url_for('static', filename='Nosotros.jpg') }}"
+             alt="Huevería Los Primos">
 
     </div>
 

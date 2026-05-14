@@ -1,509 +1,1033 @@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-<div class="container mt-5">
+<!DOCTYPE html>
+<html lang="es">
+<head>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- IZQUIERDA -->
-    <div class="d-flex align-items-center gap-2">
+    <title>Panel administrativo</title>
 
-        <a href="/historial" class="btn btn-dark btn-sm">
-            📊 Historial
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+
+body{
+    background: #f8f6f3;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+/* SIDEBAR */
+.sidebar-admin{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 260px;
+    height: 100vh;
+
+    background: linear-gradient(
+        180deg,
+        #fff7f0,
+        #f7e5d6
+    );
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 9999;
+
+    padding-top: 25px;
+
+    border-right: 1px solid #ead7c5;
+}
+
+/* LOGO */
+.admin-logo{
+    color: #b85c38;
+    text-align: center;
+
+    margin-bottom: 40px;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    font-family: Georgia, serif;
+
+    letter-spacing: 1px;
+    line-height: 1.2;
+
+    padding: 0 10px;
+}
+
+/* CONTENEDOR MENÚ */
+.menu-links{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* LINKS MENU */
+.sidebar-admin a{
+    color: #5c4033;
+    text-decoration: none;
+
+    padding: 15px 25px;
+
+    transition: 0.3s;
+
+    font-size: 16px;
+    font-weight: 500;
+
+    border-radius: 12px;
+
+    margin: 0 10px;
+}
+
+/* HOVER */
+.sidebar-admin a:hover{
+    background: #e8c9b0;
+    color: #5c4033;
+}
+
+/* LINK ACTIVO */
+.sidebar-admin a.active{
+    background: #d66c8f;
+    color: white;
+}
+
+/* CERRAR SESIÓN */
+.logout-link{
+    margin-top: auto;
+
+    background: #dc3545 !important;
+    color: white !important;
+
+    border-radius: 14px;
+
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 30px;
+
+    padding: 16px 20px !important;
+
+    text-align: center;
+
+    font-weight: bold;
+
+    transition: 0.3s;
+}
+
+.logout-link:hover{
+    background: #bb2d3b !important;
+    color: white !important;
+
+    transform: translateY(-2px);
+}
+
+/* CONTENIDO */
+.main-admin{
+    margin-left: 260px;
+    padding: 35px;
+}
+
+/* TOPBAR */
+.top-admin{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    margin-bottom: 30px;
+}
+
+/* USUARIO */
+.usuario-box{
+    background: #d66c8f;
+    color: white;
+
+    padding: 10px 18px;
+    border-radius: 12px;
+
+    font-weight: bold;
+}
+
+/* RESUMEN */
+.resumen-cards{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+/* CARDS */
+.card-resumen{
+    border-radius: 20px;
+    color: white;
+    padding: 30px;
+
+    min-height: 220px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+    transition: 0.3s;
+}
+
+.card-resumen:hover{
+    transform: translateY(-5px);
+}
+
+.card-resumen h3{
+    margin-bottom: 25px;
+    font-size: 40px;
+}
+
+.card-resumen p{
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+/* COLORES */
+.card-hoy{
+    background: #d9a066;
+}
+
+.card-semana{
+    background: #d66c8f;
+}
+
+.card-mes{
+    background: #5c4033;
+}
+
+/* MÓDULOS */
+.modulo{
+    display: none;
+
+    background: #fffdfb;
+
+    padding: 30px;
+
+    border-radius: 20px;
+
+    margin-top: 35px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.modulo h3,
+.modulo h4{
+    margin-bottom: 25px;
+    font-weight: bold;
+    color: #5c4033;
+}
+
+/* TABLAS */
+.table{
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead{
+    background: #d66c8f;
+    color: white;
+}
+
+/* BOTONES */
+.btn{
+    border-radius: 10px;
+    padding: 10px 16px;
+}
+
+/* INPUTS */
+.form-control,
+.form-select{
+    border-radius: 10px;
+    padding: 12px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px){
+
+    .resumen-cards{
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 768px){
+
+    .sidebar-admin{
+        width: 100%;
+        height: auto;
+        position: relative;
+
+        flex-direction: row;
+
+        overflow-x: auto;
+        white-space: nowrap;
+
+        padding: 10px;
+
+        border-right: none;
+    }
+
+    .admin-logo{
+        display: none;
+    }
+
+    .menu-links{
+        flex-direction: row;
+        gap: 5px;
+    }
+
+    .sidebar-admin a{
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+
+    .logout-link{
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .main-admin{
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .top-admin{
+        justify-content: center;
+    }
+
+    .usuario-box{
+        width: 100%;
+        text-align: center;
+    }
+
+    .card-resumen{
+        min-height: auto;
+    }
+
+    .card-resumen h3{
+        font-size: 30px;
+    }
+
+    .card-resumen p{
+        font-size: 17px;
+    }
+    /* MÓDULO HISTORIAL */
+#modulo-historial{
+    background: #fffdfb;
+
+    padding: 30px;
+
+    border-radius: 20px;
+
+    margin-top: 35px;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+
+    overflow-x: auto;
+}
+
+/* TABLA HISTORIAL */
+#modulo-historial table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* TÍTULO */
+#modulo-historial h3{
+    margin-bottom: 25px;
+    font-size: 40px;
+    color: #5c4033;
+}
+
+}
+
+</style>
+
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar-admin">
+
+    <div class="admin-logo">
+        Huevería <br> Los Primos
+    </div>
+
+    <div class="menu-links">
+
+        <a href="#" onclick="mostrarModulo('resumen')">
+            📊 Resumen
         </a>
 
-        <a href="/exportar_excel" class="btn btn-success btn-sm">
-    📥 Excel
-</a>
-        
+        <a href="#" onclick="mostrarModulo('ventas')">
+            💰 Ventas
+        </a>
+
+        <a href="#" onclick="mostrarModulo('productos')">
+            📦 Productos
+        </a>
+
+        <a href="#" onclick="mostrarModulo('stock')">
+            🚚 Stock
+        </a>
+
+        <a href="#" onclick="mostrarModulo('gastos')">
+            💸 Gastos
+        </a>
+
+        <a href="#" onclick="mostrarModulo('historial')">
+            📋 Historial
+        </a>
+
+        <a href="{{ url_for('exportar_excel') }}">
+        📥 Descargar Excel
+        </a>
 
     </div>
 
-    <!-- DERECHA -->
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-dark px-3 py-2">
+    <a href="/logout" class="logout-link">
+        🚪 Cerrar sesión
+    </a>
+
+</div>
+
+<!-- CONTENIDO -->
+<div class="main-admin">
+
+    <!-- TOP -->
+    <div class="top-admin">
+
+        <div></div>
+
+        <div class="usuario-box">
             👤 {{ session["usuario"] }}
-        </span>
+        </div>
 
-        <a href="/logout" class="btn btn-danger btn-sm">
-            Cerrar sesión
-        </a>
     </div>
 
-</div>
+    <!-- RESUMEN -->
+    <div id="modulo-resumen"
+     class="modulo-resumen row g-4">
 
+        <div class="col-md-4">
 
-<!-- RESUMEN -->
+            <div class="card-resumen card-hoy">
 
-<div class="container mt-5 text-center">
+                <h3>📅 Hoy</h3>
 
+                <p>Ventas: ${{ ventas_hoy }}</p>
+                <p>Gastos: ${{ gastos_hoy }}</p>
+                <p>Ganancia: ${{ ganancia_hoy }}</p>
 
-</div>
+            </div>
 
-<div class="row mb-4">
+        </div>
 
-  <!-- HOY -->
-  <div class="col">
-    <div class="card p-3 bg-success text-white">
-      <h5>📅 Hoy</h5>
-      <p>Ventas: ${{ ventas_hoy }}</p>
-      <p>Gastos: ${{ gastos_hoy }}</p>
-      <p>Ganancia: ${{ ganancia_hoy }}</p>
+        <div class="col-md-4">
+
+            <div class="card-resumen card-semana">
+
+                <h3>📆 Semana</h3>
+
+                <p>Ventas: ${{ ventas_semana }}</p>
+                <p>Gastos: ${{ gastos_semana }}</p>
+                <p>Ganancia: ${{ ganancia_semana }}</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="card-resumen card-mes">
+
+                <h3>🗓 Mes</h3>
+
+                <p>Ventas: ${{ ventas_mes }}</p>
+                <p>Gastos: ${{ gastos_mes }}</p>
+                <p>Ganancia: ${{ ganancia_mes }}</p>
+
+            </div>
+
+        </div>
+
     </div>
-  </div>
 
-  <!-- SEMANA -->
-  <div class="col">
-    <div class="card p-3 bg-primary text-white">
-      <h5>📆 Semana</h5>
-      <p>Ventas: ${{ ventas_semana }}</p>
-      <p>Gastos: ${{ gastos_semana }}</p>
-      <p>Ganancia: ${{ ganancia_semana }}</p>
-    </div>
-  </div>
+   <!-- VENTAS -->
+<div id="modulo-ventas" class="modulo" style="display:none;">
 
-  <!-- MES -->
-  <div class="col">
-    <div class="card p-3 bg-dark text-white">
-      <h5>🗓 Mes</h5>
-      <p>Ventas: ${{ ventas_mes }}</p>
-      <p>Gastos: ${{ gastos_mes }}</p>
-      <p>Ganancia: ${{ ganancia_mes }}</p>
-    </div>
-  </div>
+    <h3>➕ Nueva venta</h3>
 
-</div>
-<!-- FORMULARIO -->
-<h4>➕ Nueva venta</h4>
+    <form action="/agregar_venta" method="POST">
 
-<form action="/agregar_venta" method="POST">
+        <div class="mb-3">
 
-<div class="mb-2">
-<label>Producto:</label>
-<select name="producto_id" class="form-control mb-3" required>
-    <option value="">Seleccionar producto</option>
+            <label>Producto</label>
 
-    {% for p in productos %}
-        <option value="{{ p.id }}">
-            {{ p.nombre }}
-        </option>
-    {% endfor %}
+            <select name="producto_id" class="form-control" required>
 
-</select>
-</div>
+                <option value="">
+                    Seleccionar producto
+                </option>
 
-<div class="mb-2">
-<label>Promoción:</label>
-<select name="promocion" class="form-control mb-3">
-    <option>Sin promoción</option>
-    <option>2 maples medianitos</option>
-</select>
-</div>
+                {% for p in productos %}
 
-<div class="mb-2">
-    <label>Método de pago</label>
-    <select name="metodo_pago" class="form-control mb-3" required>
-    <option value="">Seleccionar método de pago</option>
-    <option>Efectivo</option>
-    <option>Transferencia</option>
-    <option>Mercado Pago</option>
-    <option>Débito</option>
-    <option>QR</option>
-</select>
-</div>
+                <option value="{{ p.id }}">
+                    {{ p.nombre }}
+                </option>
 
-<div class="mb-2">
-<label>Cantidad:</label>
-<input type="number" name="cantidad" class="form-control" required>
-</div>
+                {% endfor %}
 
-<div class="mb-2">
-<label>Fecha y hora:</label>
-<input type="datetime-local" name="fecha" class="form-control">
-</div>
+            </select>
 
-<br>
-<button type="submit" class="btn btn-success">Guardar venta</button>
+        </div>
 
-</form>
+        <div class="mb-3">
 
-<hr>
+            <label>Método de pago</label>
 
-<!-- TABLA -->
-<h3>📋 Ventas realizadas</h3>
-<p id="info-ventas" class="text-muted">
-  Mostrando {{ ventas_ultimas|length }} de {{ ventas_total_cantidad }}
-</p>
+            <select name="metodo_pago" class="form-control">
 
-<button id="btn-ventas" onclick="mostrarVentas()" class="btn btn-primary btn-sm mb-2">
-  Ver todas
-</button>
+                <option>Efectivo</option>
+                <option>Transferencia</option>
+                <option>Mercado Pago</option>
+                <option>Débito</option>
+                <option>QR</option>
 
-<!-- 🔍 FILTRO (OCULTO) -->
-<div id="filtro-container" style="display:none;">
+            </select>
 
-  <input 
-    type="date" 
-    id="filtroFecha"
-    class="form-control mb-2"
-    onchange="filtrarVentas()">
-<button type="button" id="btn-limpiar-ventas" class="btn btn-secondary">
-  Limpiar
-</button>
-</div>
+        </div>
 
-<table class="table table-bordered">
+        <div class="mb-3">
 
-<thead>
-<tr>
-  <th>Fecha</th>
-  <th>Producto</th>
-  <th>Cantidad</th>
-  <th>Total</th>
-  <th>Método de pago</th>
-  <th>Acciones</th>
-</tr>
-</thead>
+            <label>Cantidad</label>
 
-<tbody id="ventas-cortas">
-{% for v in ventas_ultimas %}
-<tr>
-  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-  <td>{{ v.nombre }}</td>
-  <td>{{ v.cantidad }}</td>
-  <td>${{ v.total }}</td>
-  <td>{{ v.metodo_pago }}</td>
-  <td>
-    <form method="POST" action="/eliminar_venta/{{ v.id }}">
-        <button type="submit" class="btn btn-danger btn-sm"
-            onclick="return confirm('¿Eliminar?')">
-            🗑
+            <input type="number"
+                   name="cantidad"
+                   class="form-control">
+
+        </div>
+
+        <div class="mb-3">
+
+            <label>Fecha y hora</label>
+
+            <input type="datetime-local"
+                   name="fecha"
+                   class="form-control">
+
+        </div>
+
+        <button class="btn btn-success">
+            Guardar venta
         </button>
+
     </form>
-  </td>
-</tr>
-{% endfor %}
-</tbody>
 
-<tbody id="ventas-todas" style="display:none;">
-{% for v in ventas_todas %}
-<tr>
-  <td>{{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-  <td>{{ v.nombre }}</td>
-  <td>{{ v.cantidad }}</td>
-  <td>${{ v.total }}</td>
-  <td>{{ v.metodo_pago }}</td>
-  <td>
-    <form method="POST" action="/eliminar_venta/{{ v.id }}">
-      <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
-</tbody>
+    <hr class="my-5">
 
-</table>
+    <!-- TABLA -->
+    <h3>📋 Ventas realizadas</h3>
 
-<h4>💸 Gastos</h4>
+    <!-- INFO -->
+    <p id="info-ventas" class="text-muted">
+        Mostrando {{ ventas_ultimas|length }} de {{ ventas_total_cantidad }}
+    </p>
+
+    <!-- BOTON -->
+    <button id="btn-ventas"
+            class="btn btn-secondary btn-sm mb-3"
+            onclick="mostrarVentas()">
+
+        Ver todas
+
+    </button>
+
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th>Método</th>
+                <th>Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <!-- SOLO LAS 3 ULTIMAS -->
+        <tbody id="ventas-cortas">
+
+            {% for v in ventas_ultimas %}
+
+            <tr>
+
+                <td>
+                    {{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}
+                </td>
+
+                <td>{{ v.nombre }}</td>
+
+                <td>{{ v.cantidad }}</td>
+
+                <td>${{ v.total }}</td>
+
+                <td>{{ v.metodo_pago }}</td>
+
+                <td>
+
+                    <form method="POST"
+                          action="/eliminar_venta/{{ v.id }}">
+
+                        <button class="btn btn-danger btn-sm">
+                            🗑
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+        <!-- TODAS LAS VENTAS -->
+        <tbody id="ventas-todas" style="display:none;">
+
+            {% for v in ventas_todas %}
+
+            <tr>
+
+                <td>
+                    {{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}
+                </td>
+
+                <td>{{ v.nombre }}</td>
+
+                <td>{{ v.cantidad }}</td>
+
+                <td>${{ v.total }}</td>
+
+                <td>{{ v.metodo_pago }}</td>
+
+                <td>
+
+                    <form method="POST"
+                          action="/eliminar_venta/{{ v.id }}">
+
+                        <button class="btn btn-danger btn-sm">
+                            🗑
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+    <!-- PRODUCTOS -->
+     <div id="modulo-productos" class="modulo" style="display:none;">
+    
+        <h3>📦 Productos / Stock</h3>
+
+        <table class="table table-bordered table-hover text-center align-middle">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock inicial</th>
+                    <th>Stock actual</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for p in productos %}
+
+                <tr>
+
+                    <td>{{ p.nombre }}</td>
+                    <td>{{ p.stock_inicial }}</td>
+
+                    <td>{{ p.stock_actual }}</td>
+
+                    <td>${{ p.precio }}</td>
+
+                    <td>
+
+                        <form method="POST" action="/eliminar_producto/{{ p.id }}">
+
+                            <button class="btn btn-danger btn-sm">
+                                🗑
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- STOCK -->
+     <div id="modulo-stock" class="modulo" style="display:none;">
+    
+        <h3>🚚 Ingreso de mercadería</h3>
+
+        <form action="/ingresar_stock" method="POST">
+
+            <div class="mb-3">
+
+                <label>Producto</label>
+
+                <select name="producto_id" class="form-control">
+
+                    {% for p in productos %}
+
+                    <option value="{{ p.id }}">
+                        {{ p.nombre }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+            <div class="mb-3">
+                <label>Cantidad</label>
+                <input type="number" name="cantidad" class="form-control">
+            </div>
+
+            <button class="btn btn-primary">
+                Agregar stock
+            </button>
+
+        </form>
+
+    </div>
+
+    <!-- GASTOS -->
+     <div id="modulo-gastos" class="modulo" style="display:none;">
+        <h3>💸 Registrar gasto</h3>
+
+        <form action="/agregar_gasto" method="POST">
+
+            <div class="mb-3">
+                <label>Descripción</label>
+                <input type="text" name="descripcion" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Monto</label>
+                <input type="number" step="0.01" name="monto" class="form-control">
+            </div>
+
+            <button class="btn btn-success">
+                Agregar gasto
+            </button>
+
+        </form>
+
+        <hr class="my-5">
+
+<h3>💸 Gastos registrados</h3>
+
 <p id="info-gastos" class="text-muted">
-  Mostrando {{ gastos_ultimos|length }} de {{ gastos_total_cantidad }}
+    Mostrando {{ gastos_ultimos|length }} de {{ gastos_total_cantidad }}
 </p>
 
-<button id="btn-gastos" class="btn btn-secondary btn-sm mb-2" onclick="mostrarGastos()">
-  Ver todos
+<button id="btn-gastos"
+        class="btn btn-secondary btn-sm mb-3"
+        onclick="mostrarGastos()">
+
+    Ver todos
+
 </button>
+
 <div id="filtro-gastos" style="display:none;">
 
-  <input 
-    type="date" 
-    id="filtroFechaGastos"
-    class="form-control mb-2"
-    onchange="filtrarGastos()">
-<button type="button" id="btn-limpiar-gastos" class="btn btn-secondary">
-  Limpiar
-</button>
+    <input type="date"
+           id="filtroFechaGastos"
+           class="form-control mb-2"
+           onchange="filtrarGastos()">
+
+    <button type="button"
+            id="btn-limpiar-gastos"
+            class="btn btn-secondary">
+
+        Limpiar
+
+    </button>
+
 </div>
-<table class="table table-bordered">
 
-<thead>
-<tr>
-  <th>Fecha</th>
-  <th>Descripción</th>
-  <th>Monto</th>
-  <th>Acciones</th>
-</tr>
-</thead>
+<table class="table table-bordered table-hover align-middle">
 
-<tbody id="gastos-cortos">
-{% for g in gastos_ultimos %}
-<tr>
-  <td>{{ g.fecha }}</td>
-  <td>{{ g.descripcion }}</td>
-  <td>${{ g.monto }}</td>
-  <td>
-    <form method="POST" action="/eliminar_gasto/{{ g.id }}">
-      <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
-</tbody>
-
-<tbody id="gastos-todos" style="display:none;">
-{% for g in gastos_todos %}
-<tr>
-  <td>{{ g.fecha }}</td>
-  <td>{{ g.descripcion }}</td>
-  <td>${{ g.monto }}</td>
-  <td>
-    <form action="/eliminar_gasto/{{ g.id }}" method="POST">
-      <button type="submit" class="btn btn-danger btn-sm"
-        onclick="return confirm('¿Eliminar gasto?')">
-        🗑
-      </button>
-    </form>
-  </td>
-</tr>
-{% endfor %}
-</tbody>
-
-</table>
-
-<h4>➕ Agregar producto nuevo</h4>
-
-<form action="/agregar_producto" method="POST" class="row g-2 mb-4">
-
-  <div class="col">
-    <input type="text" name="nombre" placeholder="Nombre del producto" class="form-control" required>
-  </div>
-
-  <div class="col">
-    <input type="number" name="precio" placeholder="Precio" class="form-control" required>
-  </div>
-
-  <div class="col">
-    <input type="number" name="stock" placeholder="Stock inicial" class="form-control" required>
-  </div>
-
-  <div class="col">
-    <button class="btn btn-primary">Agregar</button>
-  </div>
-
-</form>
-<h3 class="mt-4">📦 Productos / Stock</h3>
-
-<table class="table table-bordered bg-white text-center">
     <thead class="table-dark">
+
         <tr>
-            <th>Producto</th>
-            <th>Stock inicial</th>
-            <th>Stock actual</th>
-            <th>Precio</th>
+
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Monto</th>
             <th>Acciones</th>
+
         </tr>
+
     </thead>
 
-    <tbody>
-        {% for p in productos %}
+    <!-- GASTOS CORTOS -->
+    <tbody id="gastos-cortos">
+
+        {% for g in gastos_ultimos %}
+
         <tr>
 
-            <td>{{ p.nombre }}</td>
-
-            <td>{{ p.stock_inicial }}</td>
-
-            <td>
-                <form method="POST" action="/actualizar_stock/{{ p.id }}">
-                    <input type="number" name="stock" value="{{ p.stock_actual }}" class="form-control text-center">
-            </td>
+            <td>{{ g.fecha }}</td>
+            <td>{{ g.descripcion }}</td>
+            <td>${{ g.monto }}</td>
 
             <td>
-                    <input type="number" name="precio" value="{{ p.precio }}" class="form-control text-center">
-            </td>
 
-            <td>
-                    <button class="btn btn-success btn-sm">💾</button>
+                <form method="POST"
+                      action="/eliminar_gasto/{{ g.id }}">
+
+                    <button type="submit"
+                            class="btn btn-danger btn-sm">
+
+                        🗑️
+
+                    </button>
+
                 </form>
 
-                <form method="POST" action="/eliminar_producto/{{ p.id }}" style="display:inline;">
-                    <button class="btn btn-danger btn-sm">🗑</button>
-                </form>
             </td>
 
         </tr>
+
         {% endfor %}
+
     </tbody>
+
+    <!-- TODOS LOS GASTOS -->
+    <tbody id="gastos-todos" style="display:none;">
+
+        {% for g in gastos_todos %}
+
+        <tr>
+
+            <td>{{ g.fecha }}</td>
+            <td>{{ g.descripcion }}</td>
+            <td>${{ g.monto }}</td>
+
+            <td>
+
+                <form method="POST"
+                      action="/eliminar_gasto/{{ g.id }}">
+
+                    <button type="submit"
+                            class="btn btn-danger btn-sm">
+
+                        🗑️
+
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
 </table>
 
 
-<h4>📦 Ingreso de mercadería</h4>
+    </div>
 
-<form action="/ingresar_stock" method="POST">
 
-<div class="mb-2">
-<label>Producto:</label>
-<select name="producto_id" class="form-control">
-  {% for p in productos %}
-    <option value="{{ p.id }}">{{ p.nombre }}</option>
-  {% endfor %}
-</select>
+<!-- HISTORIAL -->
+<div id="modulo-historial" class="modulo">
+
+    <h3>📋 Historial completo</h3>
+
+    <table class="table table-bordered table-hover">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+    {% for v in ventas_todas %}
+
+    <tr>
+
+        <td>
+            {{ v.fecha.strftime('%d/%m/%Y %H:%M:%S') }}
+        </td>
+
+        <td>{{ v.nombre }}</td>
+
+        <td>{{ v.cantidad }}</td>
+
+        <td>${{ v.total }}</td>
+
+    </tr>
+
+    {% endfor %}
+
+</tbody>
+
+    </table>
+
 </div>
-
-<div class="mb-2">
-<label>Cantidad:</label>
-<input type="number" name="cantidad" class="form-control" required>
 </div>
-
-<br>
-<button type="submit" class="btn btn-primary">
-  Agregar stock
-</button>
-
-</form>
-
-<h4>💸 Registrar gasto</h4>
-
-<form action="/agregar_gasto" method="POST">
-
-<div class="mb-2">
-  <label>Descripción:</label>
-  <input type="text" name="descripcion" class="form-control" required>
-</div>
-
-<div class="mb-2">
-  <label>Monto:</label>
-  <input type="number" step="0.01" name="monto" class="form-control" required>
-</div>
-
-<br>
-<button type="submit" class="btn btn-success">
-  Agregar gasto
-</button>
-
-</form>
+</body>
 
 <script>
-// 🔥 ESPERAR QUE CARGUE TODO EL HTML
-document.addEventListener("DOMContentLoaded", function () {
 
-    let ventasMostradas = false;
-    let gastosMostrados = false;
+function ocultarTodos(){
 
-    // 🔵 VENTAS
-    window.mostrarVentas = function () {
-    const cortas = document.getElementById("ventas-cortas");
-    const todas = document.getElementById("ventas-todas");
-    const btn = document.getElementById("btn-ventas");
-    const filtro = document.getElementById("filtro-container");
-    const info = document.getElementById("info-ventas");
+    document.getElementById("modulo-resumen").style.display = "none";
+    document.getElementById("modulo-ventas").style.display = "none";
+    document.getElementById("modulo-productos").style.display = "none";
+    document.getElementById("modulo-stock").style.display = "none";
+    document.getElementById("modulo-gastos").style.display = "none";
+    document.getElementById("modulo-historial").style.display = "none";
 
-    ventasMostradas = !ventasMostradas;
+}
 
-    cortas.style.display = ventasMostradas ? "none" : "table-row-group";
-    todas.style.display = ventasMostradas ? "table-row-group" : "none";
-    filtro.style.display = ventasMostradas ? "block" : "none";
+function mostrarModulo(modulo){
 
-    btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
+    ocultarTodos();
 
-    if (ventasMostradas) {
-        info.innerText = "Mostrando todas";
-    } else {
-        info.innerText = `Mostrando ${cortas.children.length} de ${cortas.children.length + todas.children.length}`;
-    }
-};
+    if(modulo == "resumen"){
 
-    // 🔴 GASTOS
-    window.mostrarVentas = function () {
-    const cortas = document.getElementById("ventas-cortas");
-    const todas = document.getElementById("ventas-todas");
-    const btn = document.getElementById("btn-ventas");
-    const filtro = document.getElementById("filtro-container");
-    const info = document.getElementById("info-ventas");
+        document.getElementById("modulo-resumen").style.display = "flex";
 
-    ventasMostradas = !ventasMostradas;
+    }else{
 
-    cortas.style.display = ventasMostradas ? "none" : "table-row-group";
-    todas.style.display = ventasMostradas ? "table-row-group" : "none";
-    filtro.style.display = ventasMostradas ? "block" : "none";
+        document.getElementById("modulo-" + modulo).style.display = "block";
 
-    btn.innerText = ventasMostradas ? "Ver menos" : "Ver todas";
-
-    if (ventasMostradas) {
-        info.innerText = "Mostrando todas";
-    } else {
-        info.innerText = `Mostrando ${cortas.children.length} de ${cortas.children.length + todas.children.length}`;
-    }
-};
-
-    // 🔍 FILTRAR VENTAS
-    window.filtrarVentas = function () {
-        const fechaFiltro = document.getElementById("filtroFecha").value;
-
-        if (!fechaFiltro) return;
-
-        const [anio, mes, dia] = fechaFiltro.split("-");
-        const fechaFormateada = `${dia}/${mes}/${anio}`;
-
-        document.querySelectorAll("#ventas-todas tr").forEach(fila => {
-            const fechaTexto = fila.cells[0].innerText;
-            fila.style.display = fechaTexto.includes(fechaFormateada) ? "" : "none";
-        });
-    };
-
-    // 🔍 FILTRAR GASTOS
-    window.filtrarGastos = function () {
-        const fechaFiltro = document.getElementById("filtroFechaGastos").value;
-
-        if (!fechaFiltro) return;
-
-        const [anio, mes, dia] = fechaFiltro.split("-");
-        const fechaFormateada = `${dia}/${mes}/${anio}`;
-
-        document.querySelectorAll("#gastos-todos tr").forEach(fila => {
-            const fechaTexto = fila.cells[0].innerText;
-            fila.style.display = fechaTexto.includes(fechaFormateada) ? "" : "none";
-        });
-    };
-
-    // 🧹 LIMPIAR VENTAS (CON EVENT LISTENER REAL)
-    const btnLimpiarVentas = document.getElementById("btn-limpiar-ventas");
-    if (btnLimpiarVentas) {
-        btnLimpiarVentas.addEventListener("click", function (e) {
-            e.preventDefault();
-
-            document.getElementById("filtroFecha").value = "";
-
-            document.querySelectorAll("#ventas-cortas tr, #ventas-todas tr")
-                .forEach(fila => fila.style.display = "");
-
-            document.getElementById("ventas-cortas").style.display = "table-row-group";
-            document.getElementById("ventas-todas").style.display = "none";
-            document.getElementById("filtro-container").style.display = "none";
-            document.getElementById("btn-ventas").innerText = "Ver todas";
-
-            ventasMostradas = false;
-        });
     }
 
-    // 🧹 LIMPIAR GASTOS
-    const btnLimpiarGastos = document.getElementById("btn-limpiar-gastos");
-    if (btnLimpiarGastos) {
-        btnLimpiarGastos.addEventListener("click", function (e) {
-            e.preventDefault();
+}
 
-            document.getElementById("filtroFechaGastos").value = "";
+window.onload = function(){
 
-            document.querySelectorAll("#gastos-cortos tr, #gastos-todos tr")
-                .forEach(fila => fila.style.display = "");
+    mostrarModulo('resumen');
 
-            document.getElementById("gastos-cortos").style.display = "table-row-group";
-            document.getElementById("gastos-todos").style.display = "none";
-            document.getElementById("filtro-gastos").style.display = "none";
-            document.getElementById("btn-gastos").innerText = "Ver todos";
+}
 
-            gastosMostrados = false;
-        });
+/* =========================
+   GASTOS
+========================= */
+
+function mostrarGastos(){
+
+    let cortos = document.getElementById("gastos-cortos");
+    let todos = document.getElementById("gastos-todos");
+    let btn = document.getElementById("btn-gastos");
+
+    if(
+        todos.style.display === "none" ||
+        todos.style.display === ""
+    ){
+
+        todos.style.display = "table-row-group";
+        cortos.style.display = "none";
+
+        btn.innerText = "Ver menos";
+
+    }else{
+
+        todos.style.display = "none";
+        cortos.style.display = "table-row-group";
+
+        btn.innerText = "Ver todos";
+
     }
 
-});
+}
+
+/* =========================
+   VENTAS
+========================= */
+
+function mostrarVentas(){
+
+    let cortas = document.getElementById("ventas-cortas");
+    let todas = document.getElementById("ventas-todas");
+    let btn = document.getElementById("btn-ventas");
+
+    if(
+        todas.style.display === "none" ||
+        todas.style.display === ""
+    ){
+
+        todas.style.display = "table-row-group";
+        cortas.style.display = "none";
+
+        btn.innerText = "Ver menos";
+
+    }else{
+
+        todas.style.display = "none";
+        cortas.style.display = "table-row-group";
+
+        btn.innerText = "Ver todas";
+
+    }
+
+}
+
 </script>
+</html>
 
-</div>
+
