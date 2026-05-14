@@ -8,104 +8,190 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- ICONOS (PRO) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+<style>
 
-        .navbar {
-            border-bottom: 2px solid #dc3545;
-        }
+body{
+    background: #f4f4f4;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-        .hero {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-                        url("https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f");
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 100px 20px;
-            text-align: center;
-        }
+html{
+    scroll-behavior: smooth;
+}
 
-        .hero h1 {
-            font-size: 50px;
-            font-weight: bold;
-        }
+/* NAVBAR */
+.navbar{
+    background: white;
+    border-bottom: 1px solid #ddd;
+    padding-top: 18px;
+    padding-bottom: 18px;
+}
 
-        .card img {
-            height: 220px;
-            object-fit: cover;
-        }
+/* LOGO */
+.logo-text{
+    font-size: 42px;
+    letter-spacing: 6px;
+    color: #d66c8f !important;
+    font-weight: bold;
+}
 
-        .card {
-            border-radius: 12px;
-            transition: 0.3s;
-        }
+/* BUSCADOR */
+#buscador{
+    border: none;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    background: transparent;
+    width: 220px;
+}
 
-        .card:hover {
-            transform: scale(1.05);
-        }
+#buscador:focus{
+    box-shadow: none;
+    border-bottom: 1px solid #d66c8f;
+}
 
-        footer {
-            background: #212529;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-top: 50px;
-        }
+/* MENÚ */
+.menu-premium{
+    background: white;
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    padding: 18px;
+    border-bottom: 1px solid #ddd;
 
-        /* BOTONES REDES */
-        .social-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 18px;
-            transition: 0.3s;
-        }
+    position: sticky;
+    top: 0;
+    z-index: 9999;
 
-        .instagram {
-            background: #E1306C;
-            color: white;
-        }
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
 
-        .instagram:hover {
-            background: #c8235d;
-        }
+.menu-premium a{
+    text-decoration: none;
+    color: black;
+    font-size: 14px;
+    letter-spacing: 2px;
+    transition: 0.3s;
+}
 
-        .whatsapp {
-            background: #25D366;
-            color: white;
-        }
+.menu-premium a:hover{
+    color: #d66c8f;
+}
 
-        .whatsapp:hover {
-            background: #1ebe5d;
-        }
+/* SLIDER */
+.carousel{
+    overflow: hidden;
+}
 
-        /* BOTÓN FLOTANTE */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #25D366;
-            color: white;
-            font-size: 24px;
-            padding: 15px;
-            border-radius: 50%;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
+.slider-img{
+    width: 100%;
+    height: 720px;
+    object-fit: cover;
+    filter: brightness(0.65);
+}
 
-        .whatsapp-float:hover {
-            background-color: #1ebe5d;
-        }
+.carousel-caption{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    padding: 20px;
+}
 
-        .social-btn {
+.carousel-caption h1{
+    font-size: 60px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+    max-width: 1000px;
+    margin: auto;
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* PRODUCTOS PREMIUM */
+.producto-card{
+    background: white;
+    text-align: center;
+    transition: 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.producto-card:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.producto-img{
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+}
+
+.producto-info{
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+/* TÍTULO */
+.producto-titulo{
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    min-height: 60px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 15px;
+}
+
+/* PRECIO */
+.producto-precio{
+    margin-bottom: 20px;
+}
+
+.precio-actual{
+    font-size: 38px;
+    font-weight: bold;
+    color: black;
+}
+
+/* BOTÓN */
+.btn-carrito{
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    padding: 14px;
+    letter-spacing: 2px;
+    transition: 0.3s;
+}
+
+.btn-carrito:hover{
+    background: #333;
+}
+
+/* FOOTER */
+footer{
+    background: #111;
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    margin-top: 80px;
+}
+
+/* BOTONES REDES */
+.social-btn{
     width: 40px;
     height: 40px;
     display: flex;
@@ -117,13 +203,43 @@
     text-decoration: none;
 }
 
-.social-btn:hover {
+.social-btn:hover{
     transform: scale(1.1);
 }
 
-.horarios-box {
+.instagram{
+    background: #E1306C;
+    color: white;
+}
+
+.instagram:hover{
+    background: #c8235d;
+}
+
+/* WHATSAPP */
+.whatsapp-float{
     position: fixed;
-    bottom: 90px; /* arriba del botón de WhatsApp */
+    bottom: 20px;
+    right: 20px;
+    background-color: #25D366;
+    color: white;
+    font-size: 24px;
+    padding: 15px;
+    border-radius: 50%;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 999;
+}
+
+.whatsapp-float:hover{
+    background-color: #1ebe5d;
+}
+
+/* HORARIOS */
+.horarios-box{
+    position: fixed;
+    bottom: 90px;
     right: 20px;
     width: 250px;
     background: #c0392b;
@@ -132,57 +248,199 @@
     border-radius: 12px;
     z-index: 999;
     font-size: 14px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
-.horarios-box h5, 
-.horarios-box h6 {
+.horarios-box h5,
+.horarios-box h6{
     margin-bottom: 5px;
 }
-    </style>
-</head>
 
-<body>
+/* RESPONSIVE */
+@media (max-width: 768px){
+
+    .logo-text{
+        font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    .menu-premium{
+        gap: 15px;
+        flex-wrap: wrap;
+        padding: 12px;
+    }
+
+    .menu-premium a{
+        font-size: 12px;
+    }
+
+    .slider-img{
+        height: 350px;
+    }
+
+    .carousel-caption{
+        bottom: 10%;
+    }
+
+    .carousel-caption h1{
+        font-size: 24px;
+    }
+
+    .producto-img{
+        height: 250px;
+    }
+
+    .precio-actual{
+        font-size: 28px;
+    }
+
+    .producto-titulo{
+        font-size: 16px;
+        min-height: auto;
+    }
+
+    .horarios-box{
+        width: 200px;
+        font-size: 12px;
+    }
+
+    #buscador{
+        width: 140px;
+    }
+
+}
+
+</style>
 
 <!-- 🔝 NAVBAR -->
-<nav class="navbar navbar-expand-lg bg-white shadow-sm px-4">
-    <div class="container-fluid">
+<nav class="navbar navbar-expand-lg bg-white py-4 border-bottom">
 
-        <h3 class="fw-bold text-danger">🥚 Huevería Los Primos</h3>
+  <div class="container-fluid px-5">
 
-        <!-- DERECHA -->
-        <div class="ms-auto d-flex align-items-center gap-3">
+    <!-- LOGO -->
+    <a class="navbar-brand mx-auto fw-bold logo-text" href="/">
+      HUEVERÍA LOS PRIMOS
+    </a>
 
-            <!-- Instagram -->
-            <a href="https://instagram.com/hueverialosprimos" target="_blank" class="social-btn instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
+    <!-- DERECHA -->
+    <div class="d-flex align-items-center gap-3">
 
-            <!-- Carrito -->
-    <a href="/carrito" class="position-relative text-dark fs-4 text-decoration-none">
-        🛒
+      <a href="/login" class="text-dark text-decoration-none">
+        INICIAR SESIÓN
+      </a>
+
+      <a href="/carrito"
+         class="text-dark fs-4 text-decoration-none position-relative">
+
+        <i class="fas fa-shopping-cart"></i>
 
         {% if cantidad_carrito > 0 %}
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
             {{ cantidad_carrito }}
         </span>
         {% endif %}
 
-    </a>
-            <!-- Acceso -->
-            <a href="/login" class="btn btn-danger px-4">Acceso</a>
-
-        </div>
+      </a>
 
     </div>
+
+  </div>
+
 </nav>
 
-<!-- 🎯 HERO -->
-<div class="hero">
-    <h1>Calidad y frescura garantizada</h1>
-    <p>Los mejores huevos directo a tu negocio</p>
+<div class="menu-premium">
+
+  <a href="#inicio">INICIO</a>
+  <a href="#productos">PRODUCTOS</a>
+  <a href="#mayoristas">MAYORISTAS</a>
+  <a href="#pagos">MEDIOS DE PAGO</a>
+  <a href="#contacto">CONTACTO</a>
+
 </div>
 
+<section id="inicio">
+<div id="carouselExampleFade" 
+     class="carousel slide carousel-fade" 
+     data-bs-ride="carousel">
+
+  <div class="carousel-inner">
+
+    <!-- FOTO 1 -->
+    <div class="carousel-item active">
+      <img src="{{ url_for('static', filename='home1.jpg') }}"
+           class="d-block w-100 slider-img">
+
+      <div class="carousel-caption">
+        <h1>Hueveria los primos: Más que un negocio, una familia que elige lo mejor para la tuya</h1>
+      </div>
+    </div>
+
+    <!-- FOTO 2 -->
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='home2.jpg') }}"
+           class="d-block w-100 slider-img">
+
+      <div class="carousel-caption">
+        <h1>Blancos o colorados, pero siempre seleccionados con la misma pasión</h1>
+      </div>
+    </div>
+
+    <!-- FOTO 3 -->
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='home3.jpg') }}"
+           class="d-block w-100 slider-img">
+
+      <div class="carousel-caption">
+        <h1>Del campo a tu mesa: la frescura que se nota en cada yema</h1>
+      </div>
+    </div>
+
+    <!-- FOTO 4 -->
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='home4.jpg') }}"
+           class="d-block w-100 slider-img">
+
+      <div class="carousel-caption">
+        <h1>Calidad que pesa, frescura que se lleva a casa</h1>
+      </div>
+    </div>
+
+    <!-- FOTO 5 -->
+    <div class="carousel-item">
+      <img src="{{ url_for('static', filename='home5.jpg') }}"
+           class="d-block w-100 slider-img">
+
+      <div class="carousel-caption">
+        <h1>Naturaleza en su estado más puro, directo a tu cocina</h1>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FLECHAS -->
+  <button class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleFade"
+          data-bs-slide="prev">
+
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+
+  <button class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleFade"
+          data-bs-slide="next">
+
+    <span class="carousel-control-next-icon"></span>
+  </button>
+
+</div>
+</section>
+
+
 <!-- 🥚 PRODUCTOS -->
+<section id="productos">
+
 <div class="container mt-5">
 
     <h2 class="text-center mb-4 fw-bold">Nuestros productos</h2>
@@ -201,75 +459,338 @@
 </div>
 
     <div class="row">
-        <!-- GRANDE BLANCO -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow">
-                <img src="{{ url_for('static', filename='maple_grande_blanco.jpg') }}">
-                <div class="card-body text-center">
-                    <h5>Maple grande blanco</h5>
 
-                    <form action="/agregar" method="POST">
-    <input type="hidden" name="producto" value="Maple grande blanco">
-    <input type="hidden" name="precio" value="7200">
-    <button class="btn btn-dark mt-2">🛒</button>
-</form>
+    <!-- PRODUCTO 1 -->
+    <div class="col-md-3 mb-5">
 
+        <div class="producto-card">
+
+            <img src="{{ url_for('static', filename='maple_grande_blanco.jpg') }}"
+                 class="producto-img">
+
+            <div class="producto-info">
+
+                <h5 class="producto-titulo">
+                    MAPLE GRANDE BLANCO
+                </h5>
+
+                <div class="producto-precio">
+                    <span class="precio-actual">$7200</span>
                 </div>
+
+                <form action="/agregar" method="POST">
+
+                    <input type="hidden"
+                           name="producto"
+                           value="Maple grande blanco">
+
+                    <input type="hidden"
+                           name="precio"
+                           value="7200">
+
+                    <button class="btn-carrito">
+                        AGREGAR AL CARRITO
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PRODUCTO 2 -->
+    <div class="col-md-3 mb-5">
+
+        <div class="producto-card">
+
+            <img src="{{ url_for('static', filename='maple_grande_color.jpg') }}"
+                 class="producto-img">
+
+            <div class="producto-info">
+
+                <h5 class="producto-titulo">
+                    MAPLE GRANDE COLOR
+                </h5>
+
+                <div class="producto-precio">
+                    <span class="precio-actual">$7200</span>
+                </div>
+
+                <form action="/agregar" method="POST">
+
+                    <input type="hidden"
+                           name="producto"
+                           value="Maple grande color">
+
+                    <input type="hidden"
+                           name="precio"
+                           value="7200">
+
+                    <button class="btn-carrito">
+                        AGREGAR AL CARRITO
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PRODUCTO 3 -->
+    <div class="col-md-3 mb-5">
+
+        <div class="producto-card">
+
+            <img src="{{ url_for('static', filename='maple_mediano_blanco.jpg') }}"
+                 class="producto-img">
+
+            <div class="producto-info">
+
+                <h5 class="producto-titulo">
+                    MAPLE MEDIANO BLANCO
+                </h5>
+
+                <div class="producto-precio">
+                    <span class="precio-actual">$6400</span>
+                </div>
+
+                <form action="/agregar" method="POST">
+
+                    <input type="hidden"
+                           name="producto"
+                           value="Maple mediano blanco">
+
+                    <input type="hidden"
+                           name="precio"
+                           value="6400">
+
+                    <button class="btn-carrito">
+                        AGREGAR AL CARRITO
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PRODUCTO 4 -->
+    <div class="col-md-3 mb-5">
+
+        <div class="producto-card">
+
+            <img src="{{ url_for('static', filename='maple_mediano_color.jpg') }}"
+                 class="producto-img">
+
+            <div class="producto-info">
+
+                <h5 class="producto-titulo">
+                    MAPLE MEDIANO COLOR
+                </h5>
+
+                <div class="producto-precio">
+                    <span class="precio-actual">$6400</span>
+                </div>
+
+                <form action="/agregar" method="POST">
+
+                    <input type="hidden"
+                           name="producto"
+                           value="Maple mediano color">
+
+                    <input type="hidden"
+                           name="precio"
+                           value="6400">
+
+                    <button class="btn-carrito">
+                        AGREGAR AL CARRITO
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
             </div>
         </div>
 
-        <!-- GRANDE COLOR -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow">
-                <img src="{{ url_for('static', filename='maple_grande_color.jpg') }}">
-                <div class="card-body text-center">
-                    <h5>Maple grande color</h5>
-
-                   <form action="/agregar" method="POST">
-    <input type="hidden" name="producto" value="Maple grande color">
-    <input type="hidden" name="precio" value="7200">
-    <button class="btn btn-dark mt-2">🛒</button>
-</form>
-                </div>
-            </div>
         </div>
-
-        <!-- MEDIANO BLANCO -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow">
-                <img src="{{ url_for('static', filename='maple_mediano_blanco.jpg') }}">
-                <div class="card-body text-center">
-                    <h5>Maple mediano blanco</h5>
-
-                    <form action="/agregar" method="POST">
-    <input type="hidden" name="producto" value="Maple mediano blanco">
-    <input type="hidden" name="precio" value="6400">
-    <button class="btn btn-dark mt-2">🛒</button>
-</form>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- MEDIANO COLOR -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow">
-                <img src="{{ url_for('static', filename='maple_mediano_color.jpg') }}">
-                <div class="card-body text-center">
-                    <h5>Maple mediano color</h5>
-
-                    <form action="/agregar" method="POST">
-    <input type="hidden" name="producto" value="Maple mediano color">
-    <input type="hidden" name="precio" value="6400">
-    <button class="btn btn-dark mt-2">🛒</button>
-</form>
-
-                </div>
-            </div>
         </div>
 
     </div>
 </div>
+
+</section>
+
+<section id="mayoristas" class="container mt-5">
+
+    <h2 class="text-center mb-5 fw-bold">
+        Compra mayorista
+    </h2>
+
+    <div class="row">
+
+        <!-- CAJÓN 1 -->
+        <div class="col-md-4 mb-4">
+
+            <div class="producto-card">
+
+                <img src="{{ url_for('static', filename='cajon1.jpg') }}"
+     class="producto-img">
+
+                <div class="producto-info">
+
+                    <h5 class="producto-titulo">
+    CAJÓN X 12 MAPLES
+</h5>
+
+                    <div class="producto-precio">
+    <span class="precio-actual">$72.000</span>
+</div>
+
+                    <form action="/agregar" method="POST">
+
+                        <input type="hidden" 
+                               name="producto" 
+                               value="Cajón x 12 maples">
+
+                        <input type="hidden" 
+                               name="precio" 
+                               value="72000">
+
+                        <button class="btn btn-dark">
+                            Agregar carrito
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- CAJÓN 2 -->
+        <div class="col-md-4 mb-4">
+
+            <div class="producto-card">
+
+                <img src="{{ url_for('static', filename='cajon2.jpg') }}"
+     class="producto-img">
+
+                <div class="producto-info">
+
+                    <h5 class="producto-titulo">
+    CAJÓN PREMIUM
+</h5>
+
+                    <div class="producto-precio">
+    <span class="precio-actual">$95.000</span>
+</div>
+
+                    <form action="/agregar" method="POST">
+
+                        <input type="hidden"
+                               name="producto"
+                               value="Cajón premium">
+
+                        <input type="hidden"
+                               name="precio"
+                               value="95000">
+
+                        <button class="btn btn-dark">
+                            Agregar carrito
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section id="pagos" class="container mt-5 mb-5">
+
+    <h2 class="text-center fw-bold mb-4">
+        Medios de pago
+    </h2>
+
+    <div class="card p-4 shadow">
+
+        <h4>💵 EFECTIVO</h4>
+
+        <p>
+            Te acercás a la sucursal Paraná 478 y abonás el importe en efectivo.
+        </p>
+
+        <p>
+            Luego, mandá el comprobante de pago al 
+            WhatsApp +54 9 11 3784-6230 
+        
+        </p>
+
+        <hr>
+
+        <h4>🏦 TRANSFERENCIA BANCARIA</h4>
+
+        <p>
+            Aceptamos transferencias inmediatas.
+        </p>
+        <p>
+            Alias:
+        </p>
+
+        <hr>
+
+        <h4>💳 TARJETA DE CRÉDITO Y DÉBITO</h4>
+ 
+        <p>
+        Aceptamos todas las tarjetas de crédito y débito.
+        </p>
+
+        <p>
+        Podés pagar de forma segura mediante
+        Mercado Pago o QR.
+        </p>
+
+    </div>
+
+</section>
+
+<section id="contacto" class="container mt-5 mb-5 text-center">
+
+    <h2 class="fw-bold mb-4">
+        Contacto
+    </h2>
+
+    <p>
+        📍 Paraná 478, Nueva Córdoba
+    </p>
+
+    <p>
+        📲 WhatsApp: +54 9 351 664-4857
+    </p>
+
+    <p>
+        📸 Instagram: @hueverialosprimos
+    </p>
+
+</section>
 
 <!-- 📞 FOOTER -->
 <footer>
@@ -295,6 +816,27 @@ function agregarCarrito(producto) {
 function actualizarCarrito() {
     document.querySelector('.badge').innerText = carrito.length;
 }
+
+const buscador = document.getElementById("buscador");
+
+buscador.addEventListener("keyup", function(){
+
+    const texto = buscador.value.toLowerCase();
+
+    document.querySelectorAll(".card").forEach(card => {
+
+        const nombre = card.innerText.toLowerCase();
+
+        if(nombre.includes(texto)){
+            card.parentElement.style.display = "block";
+        } else {
+            card.parentElement.style.display = "none";
+        }
+
+    });
+
+});
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
